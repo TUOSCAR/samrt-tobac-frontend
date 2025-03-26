@@ -57,4 +57,46 @@ export function register(data: any) {
     method: 'post',
     data
   })
+}
+
+// 发送验证码
+export function sendVerificationCode(data: { username: string; email: string }) {
+  const mockHandler = getMockHandler('/api/auth/send-verification-code', 'POST')
+  if (mockHandler) {
+    return mockHandler(data)
+  }
+  
+  return request({
+    url: '/api/auth/send-verification-code',
+    method: 'post',
+    data
+  })
+}
+
+// 验证重置密码的验证码
+export function verifyResetCode(data: { username: string; email: string; code: string }) {
+  const mockHandler = getMockHandler('/api/auth/verify-reset-code', 'POST')
+  if (mockHandler) {
+    return mockHandler(data)
+  }
+  
+  return request({
+    url: '/api/auth/verify-reset-code',
+    method: 'post',
+    data
+  })
+}
+
+// 重置密码
+export function resetPassword(data: { username: string; code: string; password: string }) {
+  const mockHandler = getMockHandler('/api/auth/reset-password', 'POST')
+  if (mockHandler) {
+    return mockHandler(data)
+  }
+  
+  return request({
+    url: '/api/auth/reset-password',
+    method: 'post',
+    data
+  })
 } 

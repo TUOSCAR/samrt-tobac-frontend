@@ -6,6 +6,8 @@ import AppLayout from '@/layouts/AppLayout.vue'
 
 // 页面组件 - 通用
 const Login = () => import('@/views/auth/Login.vue')
+const Register = () => import('@/views/auth/Register.vue')
+const ResetPassword = () => import('@/views/auth/ResetPassword.vue')
 const NotFound = () => import('@/views/error/NotFound.vue')
 
 // 页面组件 - 管理员
@@ -24,6 +26,24 @@ const routes: Array<RouteRecordRaw> = [
     component: Login,
     meta: {
       title: '登录',
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/register',
+    name: 'Register',
+    component: Register,
+    meta: {
+      title: '注册',
+      requiresAuth: false
+    }
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: ResetPassword,
+    meta: {
+      title: '重置密码',
       requiresAuth: false
     }
   },
@@ -101,9 +121,10 @@ router.beforeEach((to, from, next) => {
     }
     
     // 检查角色权限
-    if (to.meta.roles && !to.meta.roles.includes(userStore.user?.role)) {
+    const roles = to.meta.roles as string[] | undefined
+    if (roles && userStore.user && !roles.includes(userStore.user.role)) {
       // 如果用户没有所需角色，根据其实际角色重定向到相应页面
-      switch (userStore.user?.role) {
+      switch (userStore.user.role) {
         case 'admin':
           next({ name: 'AdminDashboard' })
           break
@@ -120,18 +141,22 @@ router.beforeEach((to, from, next) => {
     }
   } else if (to.path === '/login' && userStore.isLoggedIn) {
     // 已登录用户访问登录页，重定向到相应首页
-    switch (userStore.user?.role) {
-      case 'admin':
-        next({ name: 'AdminDashboard' })
-        break
-      case 'technician':
-        next({ name: 'TechnicianWorkbench' })
-        break
-      case 'farmer':
-        next({ name: 'FarmerDashboard' })
-        break
-      default:
-        next()
+    if (userStore.user) {
+      switch (userStore.user.role) {
+        case 'admin':
+          next({ name: 'AdminDashboard' })
+          break
+        case 'technician':
+          next({ name: 'TechnicianWorkbench' })
+          break
+        case 'farmer':
+          next({ name: 'FarmerDashboard' })
+          break
+        default:
+          next()
+      }
+    } else {
+      next()
     }
     return
   }
