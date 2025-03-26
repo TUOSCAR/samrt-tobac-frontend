@@ -33,6 +33,7 @@ import SideMenu from '@/components/common/SideMenu.vue'
 import AppFooter from '@/components/common/AppFooter.vue'
 import NotificationCenter from '@/components/common/NotificationCenter.vue'
 import { useUserStore } from '@/store/user'
+import { menuItems } from '@/config/menu'
 
 // 使用状态管理
 const userStore = useUserStore()
@@ -44,16 +45,7 @@ const menuCollapse = ref(false)
 // 根据用户角色获取对应的菜单
 const menus = computed(() => {
   const role = userStore.user?.role || 'guest'
-  switch (role) {
-    case 'admin':
-      return adminMenus
-    case 'technician':
-      return technicianMenus
-    case 'farmer':
-      return farmerMenus
-    default:
-      return []
-  }
+  return menuItems.filter(item => !item.roles || item.roles.includes(role))
 })
 
 // 计算面包屑导航
@@ -69,45 +61,6 @@ const breadcrumbs = computed(() => {
 const handleLogout = () => {
   userStore.logout()
 }
-
-// 菜单配置
-const adminMenus = [
-  {
-    title: '仪表盘',
-    icon: 'el-icon-s-home',
-    path: '/dashboard'
-  },
-  {
-    title: '数据管理',
-    icon: 'el-icon-s-data',
-    children: [
-      { title: '无人机影像', path: '/data/drone-images' },
-      { title: '气象数据', path: '/data/weather' },
-      { title: '种植参数', path: '/data/parameters' },
-      { title: '文档管理', path: '/data/documents' },
-      { title: '知识库管理', path: '/data/knowledge-base' }
-    ]
-  },
-  // 其他菜单项省略...
-]
-
-const technicianMenus = [
-  {
-    title: '工作台',
-    icon: 'el-icon-s-home',
-    path: '/workbench'
-  },
-  // 其他菜单项省略...
-]
-
-const farmerMenus = [
-  {
-    title: '我的烟田',
-    icon: 'el-icon-s-home',
-    path: '/my-fields'
-  },
-  // 其他菜单项省略...
-]
 
 onMounted(() => {
   // 初始化工作，例如获取用户信息

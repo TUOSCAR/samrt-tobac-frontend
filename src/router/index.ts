@@ -86,8 +86,50 @@ const routes: Array<RouteRecordRaw> = [
           requiresAuth: true,
           roles: ['farmer']
         }
+      },
+      
+      // 地块管理路由
+      {
+        path: 'fields',
+        name: 'FieldList',
+        component: () => import('@/views/field/FieldList.vue'),
+        meta: {
+          title: '地块列表',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
+      {
+        path: 'fields/map',
+        name: 'FieldMap',
+        component: () => import('@/views/field/FieldMap.vue'),
+        meta: {
+          title: '地块地图',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
+      {
+        path: 'fields/:id',
+        name: 'FieldDetail',
+        component: () => import('@/views/field/FieldDetail.vue'),
+        meta: {
+          title: '地块详情',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
       }
     ]
+  },
+  {
+    path: '/land',
+    name: 'Land',
+    component: () => import('@/views/LandPage.vue'),
+    meta: {
+      title: '地块管理',
+      requiresAuth: true,
+      roles: ['admin', 'technician']
+    }
   },
   {
     path: '/:pathMatch(.*)*',

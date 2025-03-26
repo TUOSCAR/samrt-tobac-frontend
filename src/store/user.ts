@@ -1,12 +1,7 @@
 import { defineStore } from 'pinia'
 import { login, getUserInfo, logout } from '@/api/auth'
 import router from '@/router'
-
-interface UserState {
-  token: string | null
-  user: any | null
-  isLoading: boolean
-}
+import type { User, UserState } from '@/types/user'
 
 export const useUserStore = defineStore('user', {
   state: (): UserState => ({

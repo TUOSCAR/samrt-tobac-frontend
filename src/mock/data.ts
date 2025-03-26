@@ -102,4 +102,146 @@ export const notifications = [
     isRead: false,
     createdAt: '2023-08-01T10:00:00Z'
   }
-] 
+]
+
+import { MockMethod } from 'vite-plugin-mock'
+
+const droneImages = [
+  {
+    id: 1,
+    fieldId: 1,
+    imageUrl: '/mock/drone-images/1.jpg',
+    captureTime: '2024-03-26 10:00:00',
+    resolution: '4K',
+    type: 'RGB'
+  },
+  {
+    id: 2,
+    fieldId: 1,
+    imageUrl: '/mock/drone-images/2.jpg',
+    captureTime: '2024-03-26 11:00:00',
+    resolution: '4K',
+    type: 'Multispectral'
+  }
+]
+
+const weatherData = [
+  {
+    id: 1,
+    fieldId: 1,
+    temperature: 25.5,
+    humidity: 65,
+    rainfall: 0,
+    windSpeed: 3.2,
+    timestamp: '2024-03-26 10:00:00'
+  },
+  {
+    id: 2,
+    fieldId: 1,
+    temperature: 26.8,
+    humidity: 62,
+    rainfall: 0,
+    windSpeed: 3.5,
+    timestamp: '2024-03-26 11:00:00'
+  }
+]
+
+const plantingParameters = [
+  {
+    id: 1,
+    fieldId: 1,
+    parameterName: '土壤湿度',
+    value: '65',
+    unit: '%',
+    updateTime: '2024-03-26 10:00:00'
+  },
+  {
+    id: 2,
+    fieldId: 1,
+    parameterName: '土壤pH值',
+    value: '6.5',
+    unit: 'pH',
+    updateTime: '2024-03-26 10:00:00'
+  }
+]
+
+export default [
+  {
+    url: '/api/data/drone-images/:fieldId',
+    method: 'get',
+    response: ({ query }) => {
+      const fieldId = parseInt(query.fieldId)
+      const images = droneImages.filter(img => img.fieldId === fieldId)
+      return {
+        code: 200,
+        data: images
+      }
+    }
+  },
+  {
+    url: '/api/data/drone-images/:fieldId',
+    method: 'post',
+    response: ({ query, body }) => {
+      const fieldId = parseInt(query.fieldId)
+      const newImage = {
+        id: droneImages.length + 1,
+        fieldId,
+        ...body,
+        captureTime: new Date().toISOString()
+      }
+      droneImages.push(newImage)
+      return {
+        code: 200,
+        data: newImage
+      }
+    }
+  },
+  {
+    url: '/api/data/weather/:fieldId',
+    method: 'get',
+    response: ({ query }) => {
+      const fieldId = parseInt(query.fieldId)
+      const { startTime, endTime } = query
+      const data = weatherData.filter(
+        w => w.fieldId === fieldId &&
+        w.timestamp >= startTime &&
+        w.timestamp <= endTime
+      )
+      return {
+        code: 200,
+        data
+      }
+    }
+  },
+  {
+    url: '/api/data/parameters/:fieldId',
+    method: 'get',
+    response: ({ query }) => {
+      const fieldId = parseInt(query.fieldId)
+      const parameters = plantingParameters.filter(p => p.fieldId === fieldId)
+      return {
+        code: 200,
+        data: parameters
+      }
+    }
+  },
+  {
+    url: '/api/data/parameters/:fieldId',
+    method: 'put',
+    response: ({ query, body }) => {
+      const fieldId = parseInt(query.fieldId)
+      const param = plantingParameters.find(p => p.fieldId === fieldId)
+      if (param) {
+        Object.assign(param, body)
+        return {
+          code: 200,
+          data: param
+        }
+      }
+      return {
+        code: 404,
+        message: '参数不存在'
+      }
+    }
+  }
+] as MockMethod[] 
