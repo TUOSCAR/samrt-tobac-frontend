@@ -58,4 +58,12 @@ export function getFieldTypes() {
     url: '/api/fields/types',
     method: 'get'
   })
+}
+
+// 获取监测任务关联的地块
+export function getFieldsByTask(taskId: string) {
+  return request<ApiResponse<Field[]>>({
+    url: '/api/monitoring-tasks/' + taskId + '/fields',
+    method: 'get'
+  })
 } 

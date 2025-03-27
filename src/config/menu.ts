@@ -69,6 +69,29 @@ export const menuItems: MenuItem[] = [
     ]
   },
   {
+    title: '分析结果',
+    icon: 'DataAnalysis',
+    path: '/analysis',
+    roles: ['admin', 'technician'],
+    children: [
+      {
+        title: '株数分析',
+        path: '/analysis/plant-count',
+        icon: 'Coin'
+      },
+      {
+        title: '生长分析',
+        path: '/analysis/growth',
+        icon: 'TrendCharts'
+      },
+      {
+        title: '估产分析',
+        path: '/analysis/yield',
+        icon: 'PieChart'
+      }
+    ]
+  },
+  {
     title: '数据管理',
     icon: 'DataAnalysis',
     path: '/data',

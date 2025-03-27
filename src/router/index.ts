@@ -25,6 +25,11 @@ const TaskDetail = () => import('@/views/task/TaskDetail.vue')
 const TaskEdit = () => import('@/views/task/TaskEdit.vue')
 const TaskCalendar = () => import('@/views/task/TaskCalendar.vue')
 
+// 页面组件 - 分析结果
+const PlantCountResult = () => import('@/views/analysis/PlantCountResult.vue')
+const GrowthAnalysisResult = () => import('@/views/analysis/GrowthAnalysisResult.vue')
+const YieldEstimationResult = () => import('@/views/analysis/YieldEstimationResult.vue')
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
@@ -175,6 +180,38 @@ const routes: Array<RouteRecordRaw> = [
           title: '监测任务详情',
           requiresAuth: true,
           roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      
+      // 分析结果路由
+      {
+        path: 'analysis/plant-count',
+        name: 'PlantCountResult',
+        component: PlantCountResult,
+        meta: {
+          title: '株数分析结果',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
+      {
+        path: 'analysis/growth',
+        name: 'GrowthAnalysisResult',
+        component: GrowthAnalysisResult,
+        meta: {
+          title: '生长分析结果',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
+      {
+        path: 'analysis/yield',
+        name: 'YieldEstimationResult',
+        component: YieldEstimationResult,
+        meta: {
+          title: '估产分析结果',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
         }
       }
     ]
