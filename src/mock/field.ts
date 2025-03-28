@@ -94,6 +94,117 @@ const monitoringData = [
   }
 ]
 
+// 地块管理模拟数据
+
+// 地块列表数据
+const fieldData = [
+  {
+    id: 1,
+    field_name: '东区1号地块',
+    area: 15.8,
+    location: '东区',
+    crop_variety: 'K326',
+    planting_date: '2023-04-15',
+    expected_harvest_date: '2023-08-20',
+    responsible_person: 3,
+    status: 'active'
+  },
+  {
+    id: 2,
+    field_name: '东区2号地块',
+    area: 12.3,
+    location: '东区',
+    crop_variety: 'NC297',
+    planting_date: '2023-04-18',
+    expected_harvest_date: '2023-08-25',
+    responsible_person: 3,
+    status: 'active'
+  },
+  {
+    id: 3,
+    field_name: '西区1号地块',
+    area: 18.6,
+    location: '西区',
+    crop_variety: 'K326',
+    planting_date: '2023-04-10',
+    expected_harvest_date: '2023-08-15',
+    responsible_person: 4,
+    status: 'active'
+  },
+  {
+    id: 4,
+    field_name: '北区试验地块',
+    area: 5.2,
+    location: '北区',
+    crop_variety: '试验品种ABC',
+    planting_date: '2023-04-05',
+    expected_harvest_date: '2023-08-10',
+    responsible_person: 2,
+    status: 'active'
+  },
+  {
+    id: 5,
+    field_name: '南区示范地块',
+    area: 20.5,
+    location: '南区',
+    crop_variety: 'NC297',
+    planting_date: '2023-04-20',
+    expected_harvest_date: '2023-08-30',
+    responsible_person: 2,
+    status: 'active'
+  }
+];
+
+// 获取所有地块
+export const getAllFields = () => {
+  return {
+    success: true,
+    code: 200,
+    message: '获取地块列表成功',
+    data: fieldData
+  };
+};
+
+// 根据ID获取地块详情
+export const getFieldById = (id: number) => {
+  const field = fieldData.find(f => f.id === id);
+  
+  if (field) {
+    return {
+      success: true,
+      code: 200,
+      message: '获取地块详情成功',
+      data: field
+    };
+  } else {
+    return {
+      success: false,
+      code: 404,
+      message: '地块不存在',
+      data: null
+    };
+  }
+};
+
+// 获取地块相关统计信息
+export const getFieldStats = () => {
+  return {
+    success: true,
+    code: 200,
+    message: '获取地块统计信息成功',
+    data: {
+      total_fields: fieldData.length,
+      total_area: fieldData.reduce((sum, field) => sum + field.area, 0).toFixed(1),
+      avg_area: (fieldData.reduce((sum, field) => sum + field.area, 0) / fieldData.length).toFixed(1),
+      variety_distribution: {
+        'K326': fieldData.filter(f => f.crop_variety === 'K326').length,
+        'NC297': fieldData.filter(f => f.crop_variety === 'NC297').length,
+        'Other': fieldData.filter(f => f.crop_variety !== 'K326' && f.crop_variety !== 'NC297').length
+      }
+    }
+  };
+};
+
 export default [
   // 获取地块列表
   {

@@ -42,6 +42,26 @@
         <el-menu-item index="/execution/pending-reviews">待审核反馈</el-menu-item>
         <el-menu-item index="/execution/evaluation">执行情况分析</el-menu-item>
       </el-sub-menu>
+      
+      <el-sub-menu index="farming">
+        <template #title>
+          <el-icon><Crop /></el-icon>
+          <span>农事管理</span>
+        </template>
+        <el-menu-item index="/farming/calendar">农事日历</el-menu-item>
+        <el-menu-item index="/farming/records">农事记录</el-menu-item>
+        <el-menu-item index="/farming/records/create">添加农事记录</el-menu-item>
+      </el-sub-menu>
+      
+      <el-sub-menu index="chat">
+        <template #title>
+          <el-icon><ChatDotRound /></el-icon>
+          <span>智能体交互</span>
+        </template>
+        <el-menu-item index="/chat">智能对话</el-menu-item>
+        <el-menu-item index="/chat/history">会话记录</el-menu-item>
+        <el-menu-item index="/chat/field">地块相关问答</el-menu-item>
+      </el-sub-menu>
     </template>
 
     <!-- 烟技人员菜单 -->
@@ -81,6 +101,26 @@
         <el-menu-item index="/execution/pending-reviews">待审核反馈</el-menu-item>
         <el-menu-item index="/execution/evaluation">执行情况分析</el-menu-item>
       </el-sub-menu>
+      
+      <el-sub-menu index="farming">
+        <template #title>
+          <el-icon><Crop /></el-icon>
+          <span>农事管理</span>
+        </template>
+        <el-menu-item index="/farming/calendar">农事日历</el-menu-item>
+        <el-menu-item index="/farming/records">农事记录</el-menu-item>
+        <el-menu-item index="/farming/records/create">添加农事记录</el-menu-item>
+      </el-sub-menu>
+      
+      <el-sub-menu index="chat">
+        <template #title>
+          <el-icon><ChatDotRound /></el-icon>
+          <span>智能体交互</span>
+        </template>
+        <el-menu-item index="/chat">智能对话</el-menu-item>
+        <el-menu-item index="/chat/history">会话记录</el-menu-item>
+        <el-menu-item index="/chat/field">地块相关问答</el-menu-item>
+      </el-sub-menu>
     </template>
 
     <!-- 烟农菜单 -->
@@ -98,6 +138,26 @@
         <el-menu-item index="/execution/tasks">我的任务</el-menu-item>
         <el-menu-item index="/execution/pending-feedbacks">待提交反馈</el-menu-item>
       </el-sub-menu>
+      
+      <el-sub-menu index="farming">
+        <template #title>
+          <el-icon><Crop /></el-icon>
+          <span>农事管理</span>
+        </template>
+        <el-menu-item index="/farming/calendar">农事日历</el-menu-item>
+        <el-menu-item index="/farming/records">农事记录</el-menu-item>
+        <el-menu-item index="/farming/records/create">添加农事记录</el-menu-item>
+      </el-sub-menu>
+      
+      <el-sub-menu index="chat">
+        <template #title>
+          <el-icon><ChatDotRound /></el-icon>
+          <span>智能体交互</span>
+        </template>
+        <el-menu-item index="/chat">智能对话</el-menu-item>
+        <el-menu-item index="/chat/history">会话记录</el-menu-item>
+        <el-menu-item index="/chat/field">地块相关问答</el-menu-item>
+      </el-sub-menu>
     </template>
   </el-menu>
 </template>
@@ -112,7 +172,9 @@ import {
   House,
   MapLocation,
   List,
-  SetUp
+  SetUp,
+  Crop,
+  ChatDotRound
 } from '@element-plus/icons-vue'
 
 const router = useRouter()

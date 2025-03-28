@@ -46,6 +46,17 @@ const FeedbackReview = () => import('@/views/execution/FeedbackReview.vue')
 const TaskAssignment = () => import('@/views/execution/TaskAssignment.vue')
 const EffectivenessEvaluation = () => import('@/views/execution/EffectivenessEvaluation.vue')
 
+// 页面组件 - 农事管理
+const FarmingCalendar = () => import('@/views/farming/FarmingCalendar.vue')
+const FarmingRecordList = () => import('@/views/farming/FarmingRecordList.vue')
+const FarmingRecordDetail = () => import('@/views/farming/FarmingRecordDetail.vue')
+const FarmingRecordForm = () => import('@/views/farming/FarmingRecordForm.vue')
+
+// 页面组件 - 智能体交互
+const AIChat = () => import('@/views/chat/AIChat.vue')
+const ChatHistory = () => import('@/views/chat/ChatHistory.vue')
+const FieldChat = () => import('@/views/chat/FieldChat.vue')
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
@@ -376,6 +387,90 @@ const routes: Array<RouteRecordRaw> = [
           roles: ['admin', 'technician']
         }
       },
+      
+      // 农事管理路由
+      {
+        path: 'farming/calendar',
+        name: 'FarmingCalendar',
+        component: FarmingCalendar,
+        meta: {
+          title: '农事日历',
+          requiresAuth: true,
+          roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      {
+        path: 'farming/records',
+        name: 'FarmingRecordList',
+        component: FarmingRecordList,
+        meta: {
+          title: '农事记录',
+          requiresAuth: true,
+          roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      {
+        path: 'farming/records/create',
+        name: 'FarmingRecordCreate',
+        component: FarmingRecordForm,
+        meta: {
+          title: '添加农事记录',
+          requiresAuth: true,
+          roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      {
+        path: 'farming/records/edit/:id',
+        name: 'FarmingRecordEdit',
+        component: FarmingRecordForm,
+        meta: {
+          title: '编辑农事记录',
+          requiresAuth: true,
+          roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      {
+        path: 'farming/records/:id',
+        name: 'FarmingRecordDetail',
+        component: FarmingRecordDetail,
+        meta: {
+          title: '农事记录详情',
+          requiresAuth: true,
+          roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      
+      // 智能体交互路由
+      {
+        path: 'chat',
+        name: 'AIChat',
+        component: AIChat,
+        meta: {
+          title: '智能对话',
+          requiresAuth: true,
+          roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      {
+        path: 'chat/history',
+        name: 'ChatHistory',
+        component: ChatHistory,
+        meta: {
+          title: '会话记录',
+          requiresAuth: true,
+          roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      {
+        path: 'chat/field',
+        name: 'FieldChat',
+        component: FieldChat,
+        meta: {
+          title: '地块相关问答',
+          requiresAuth: true,
+          roles: ['technician', 'farmer']
+        }
+      }
     ]
   },
   {

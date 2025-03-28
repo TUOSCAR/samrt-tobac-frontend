@@ -140,6 +140,53 @@ export const menuItems: MenuItem[] = [
     ]
   },
   {
+    title: '农事管理',
+    icon: 'Farmland',
+    path: '/farming',
+    roles: ['admin', 'technician', 'farmer'],
+    children: [
+      {
+        title: '农事日历',
+        path: '/farming/calendar',
+        icon: 'Calendar'
+      },
+      {
+        title: '农事记录',
+        path: '/farming/records',
+        icon: 'Memo'
+      },
+      {
+        title: '添加农事记录',
+        path: '/farming/records/create',
+        icon: 'DocumentAdd'
+      }
+    ]
+  },
+  {
+    title: '智能体交互',
+    icon: 'ChatLineRound',
+    path: '/chat',
+    roles: ['admin', 'technician', 'farmer'],
+    children: [
+      {
+        title: '智能对话',
+        path: '/chat',
+        icon: 'ChatDotRound'
+      },
+      {
+        title: '会话记录',
+        path: '/chat/history',
+        icon: 'Document'
+      },
+      {
+        title: '地块相关问答',
+        path: '/chat/field',
+        icon: 'LocationInformation',
+        roles: ['technician', 'farmer']
+      }
+    ]
+  },
+  {
     title: '分析结果',
     icon: 'DataAnalysis',
     path: '/analysis',

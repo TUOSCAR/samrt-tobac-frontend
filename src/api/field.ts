@@ -1,6 +1,7 @@
 import request from '@/utils/request'
 import type { Field, FieldFilter, FieldStats, FieldType, ApiResponse, PaginatedResponse } from '@/types/field'
 import { getMockHandler } from '@/mock'
+import { getAllFields as mockGetAllFields } from '@/mock/field'
 
 // 获取地块列表
 export function getFieldList(params: FieldFilter & { page: number; pageSize: number }) {
@@ -84,15 +85,9 @@ export function getFields(params?: any) {
 /**
  * 获取所有地块
  */
-export function getAllFields() {
-  return request({
-    url: '/api/fields',
-    method: 'GET',
-    params: {
-      page: 1,
-      pageSize: 100
-    }
-  });
+export const getAllFields = (): Promise<ApiResponse<Field[]>> => {
+  // 直接使用模拟数据
+  return Promise.resolve(mockGetAllFields())
 }
 
 /**
