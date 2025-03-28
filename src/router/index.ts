@@ -19,6 +19,11 @@ const TechnicianWorkbench = () => import('@/views/dashboard/TechnicianWorkbench.
 // 页面组件 - 烟农
 const FarmerDashboard = () => import('@/views/dashboard/FarmerDashboard.vue')
 
+// 页面组件 - 数据管理
+const DroneImageList = () => import('@/views/data/DroneImageList.vue')
+const WeatherData = () => import('@/views/data/WeatherData.vue')
+const PlantingParameters = () => import('@/views/data/PlantingParameters.vue')
+
 // 页面组件 - 任务管理
 const TaskList = () => import('@/views/task/TaskList.vue')
 const TaskDetail = () => import('@/views/task/TaskDetail.vue')
@@ -130,6 +135,38 @@ const routes: Array<RouteRecordRaw> = [
           title: '我的烟田',
           requiresAuth: true,
           roles: ['farmer']
+        }
+      },
+
+      // 数据管理路由
+      {
+        path: 'data/drone-images',
+        name: 'DroneImageList',
+        component: DroneImageList,
+        meta: {
+          title: '无人机影像管理',
+          requiresAuth: true,
+          roles: ['admin']
+        }
+      },
+      {
+        path: 'data/weather',
+        name: 'WeatherData',
+        component: WeatherData,
+        meta: {
+          title: '气象数据管理',
+          requiresAuth: true,
+          roles: ['admin']
+        }
+      },
+      {
+        path: 'data/parameters',
+        name: 'PlantingParameters',
+        component: PlantingParameters,
+        meta: {
+          title: '种植参数管理',
+          requiresAuth: true,
+          roles: ['admin']
         }
       },
       

@@ -104,36 +104,51 @@ export const notifications = [
   }
 ]
 
-import { MockMethod } from 'vite-plugin-mock'
-
-const droneImages = [
+// 无人机影像数据
+export const droneImages = [
   {
     id: 1,
     fieldId: 1,
-    imageUrl: '/mock/drone-images/1.jpg',
-    captureTime: '2024-03-26 10:00:00',
-    resolution: '4K',
-    type: 'RGB'
+    imageUrl: '/mock/images/drone1.jpg',
+    captureTime: '2024-03-20T10:30:00Z',
+    resolution: '0.1m',
+    type: 'RGB',
+    fileSize: '256MB'
   },
   {
     id: 2,
     fieldId: 1,
-    imageUrl: '/mock/drone-images/2.jpg',
-    captureTime: '2024-03-26 11:00:00',
-    resolution: '4K',
-    type: 'Multispectral'
+    imageUrl: '/mock/images/drone2.jpg',
+    captureTime: '2024-03-20T11:15:00Z',
+    resolution: '0.1m',
+    type: 'Multispectral',
+    fileSize: '512MB'
+  },
+  {
+    id: 3,
+    fieldId: 2,
+    imageUrl: '/mock/images/drone3.jpg',
+    captureTime: '2024-03-21T09:45:00Z',
+    resolution: '0.1m',
+    type: 'RGB',
+    fileSize: '256MB'
   }
 ]
 
-const weatherData = [
+// 气象数据
+export const weatherData = [
   {
     id: 1,
     fieldId: 1,
-    temperature: 25.5,
+    temperature: 25.6,
     humidity: 65,
     rainfall: 0,
     windSpeed: 3.2,
-    timestamp: '2024-03-26 10:00:00'
+    windDirection: '东南风',
+    timestamp: '2024-03-20T10:00:00Z',
+    pressure: 1013,
+    visibility: 10,
+    dataSource: '自动气象站'
   },
   {
     id: 2,
@@ -142,26 +157,55 @@ const weatherData = [
     humidity: 62,
     rainfall: 0,
     windSpeed: 3.5,
-    timestamp: '2024-03-26 11:00:00'
+    windDirection: '东南风',
+    timestamp: '2024-03-20T11:00:00Z',
+    pressure: 1012,
+    visibility: 10,
+    dataSource: '自动气象站'
+  },
+  {
+    id: 3,
+    fieldId: 2,
+    temperature: 24.9,
+    humidity: 68,
+    rainfall: 0,
+    windSpeed: 3.0,
+    windDirection: '东南风',
+    timestamp: '2024-03-20T10:00:00Z',
+    pressure: 1013,
+    visibility: 10,
+    dataSource: '自动气象站'
   }
 ]
 
-const plantingParameters = [
+// 种植参数数据
+export const plantingParameters = [
   {
     id: 1,
     fieldId: 1,
-    parameterName: '土壤湿度',
-    value: '65',
-    unit: '%',
-    updateTime: '2024-03-26 10:00:00'
+    parameterName: '留叶数',
+    value: '18-20',
+    unit: '片',
+    updateTime: '2024-03-20T10:00:00Z',
+    remarks: '根据品种特性设定'
   },
   {
     id: 2,
     fieldId: 1,
-    parameterName: '土壤pH值',
-    value: '6.5',
-    unit: 'pH',
-    updateTime: '2024-03-26 10:00:00'
+    parameterName: '单叶干重',
+    value: '8-10',
+    unit: 'g',
+    updateTime: '2024-03-20T10:00:00Z',
+    remarks: '目标产量指标'
+  },
+  {
+    id: 3,
+    fieldId: 2,
+    parameterName: '留叶数',
+    value: '18-20',
+    unit: '片',
+    updateTime: '2024-03-20T10:00:00Z',
+    remarks: '根据品种特性设定'
   }
 ]
 
@@ -326,6 +370,96 @@ export const reviewStatusOptions = [
   { value: 'rejected', label: '已拒绝' },
   { value: 'needs_revision', label: '需修改' }
 ]
+
+// Mock API响应函数
+export function getDroneImages(params?: any) {
+  let result = [...droneImages]
+  
+  // 模拟筛选
+  if (params?.fieldId) {
+    result = result.filter(img => img.fieldId === params.fieldId)
+  }
+  if (params?.type) {
+    result = result.filter(img => img.type === params.type)
+  }
+  if (params?.startDate && params?.endDate) {
+    result = result.filter(img => {
+      const captureTime = new Date(img.captureTime)
+      return captureTime >= new Date(params.startDate) && 
+             captureTime <= new Date(params.endDate)
+    })
+  }
+  
+  // 模拟分页
+  const page = params?.page || 1
+  const pageSize = params?.pageSize || 10
+  const start = (page - 1) * pageSize
+  const end = start + pageSize
+  const paginatedResult = result.slice(start, end)
+  
+  return {
+    success: true,
+    code: 200,
+    message: '获取无人机影像列表成功',
+    data: paginatedResult,
+    meta: {
+      page,
+      pageSize,
+      total: result.length
+    }
+  }
+}
+
+export function getWeatherData(params?: any) {
+  let result = [...weatherData]
+  
+  // 模拟筛选
+  if (params?.fieldId) {
+    result = result.filter(data => data.fieldId === params.fieldId)
+  }
+  if (params?.startTime && params?.endTime) {
+    result = result.filter(data => {
+      const timestamp = new Date(data.timestamp)
+      return timestamp >= new Date(params.startTime) && 
+             timestamp <= new Date(params.endTime)
+    })
+  }
+  
+  // 模拟分页
+  const page = params?.page || 1
+  const pageSize = params?.pageSize || 10
+  const start = (page - 1) * pageSize
+  const end = start + pageSize
+  const paginatedResult = result.slice(start, end)
+  
+  return {
+    success: true,
+    code: 200,
+    message: '获取气象数据成功',
+    data: paginatedResult,
+    meta: {
+      page,
+      pageSize,
+      total: result.length
+    }
+  }
+}
+
+export function getPlantingParameters(params?: any) {
+  let result = [...plantingParameters]
+  
+  // 模拟筛选
+  if (params?.fieldId) {
+    result = result.filter(param => param.fieldId === params.fieldId)
+  }
+  
+  return {
+    success: true,
+    code: 200,
+    message: '获取种植参数成功',
+    data: result
+  }
+}
 
 export default [
   {
