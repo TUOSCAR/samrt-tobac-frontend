@@ -165,6 +165,168 @@ const plantingParameters = [
   }
 ]
 
+// 烟田列表
+export const fieldList = [
+  { id: 1, name: '东山1号烟田', area: 10.5, address: '山东省烟台市东山区' },
+  { id: 2, name: '西峰2号烟田', area: 8.2, address: '山东省烟台市西峰区' },
+  { id: 3, name: '北畈3号烟田', area: 12.0, address: '山东省烟台市北畈区' },
+  { id: 4, name: '南坡4号烟田', area: 9.7, address: '山东省烟台市南坡区' },
+  { id: 5, name: '中心5号烟田', area: 11.3, address: '山东省烟台市中心区' }
+]
+
+// 获取字段列表
+export function fetchFieldList() {
+  return {
+    success: true,
+    code: 200,
+    message: '获取烟田列表成功',
+    data: fieldList
+  }
+}
+
+// 执行任务数据
+export const executionTasks = [
+  {
+    id: 1,
+    task_code: 'EX2024001',
+    task_type: '施肥',
+    field_id: 1,
+    field_name: '东山1号烟田',
+    task_content: '根据土壤检测结果，对东区进行氮肥补充，用量为每亩3kg',
+    priority: 'high',
+    creator_id: 2,
+    creator_name: 'technician',
+    assignee_id: 3,
+    assignee_name: 'farmer',
+    due_date: '2024-04-10T23:59:59Z',
+    created_at: '2024-04-01T10:30:00Z',
+    status: 'pending',
+    updated_at: '2024-04-01T10:30:00Z'
+  },
+  {
+    id: 2,
+    task_code: 'EX2024002',
+    task_type: '病虫害防治',
+    field_id: 1,
+    field_name: '东山1号烟田',
+    task_content: '发现西区有烟青虫危害迹象，请使用推荐的生物农药进行喷洒防治',
+    priority: 'urgent',
+    creator_id: 2,
+    creator_name: 'technician',
+    assignee_id: 3,
+    assignee_name: 'farmer',
+    due_date: '2024-04-05T23:59:59Z',
+    created_at: '2024-04-02T09:15:00Z',
+    status: 'in_progress',
+    updated_at: '2024-04-03T11:20:00Z'
+  },
+  {
+    id: 3,
+    task_code: 'EX2024003',
+    task_type: '灌溉',
+    field_id: 2,
+    field_name: '西峰2号烟田',
+    task_content: '土壤湿度低于标准，请进行适量灌溉，注意控制水量',
+    priority: 'medium',
+    creator_id: 2,
+    creator_name: 'technician',
+    assignee_id: 3,
+    assignee_name: 'farmer',
+    due_date: '2024-04-08T23:59:59Z',
+    created_at: '2024-04-03T14:20:00Z',
+    status: 'pending',
+    updated_at: '2024-04-03T14:20:00Z'
+  },
+  {
+    id: 4,
+    task_code: 'EX2024004',
+    task_type: '采收',
+    field_id: 1,
+    field_name: '东山1号烟田',
+    task_content: '东区烟叶已成熟，请安排采收，注意分级存放',
+    priority: 'high',
+    creator_id: 2,
+    creator_name: 'technician',
+    assignee_id: 3,
+    assignee_name: 'farmer',
+    due_date: '2024-04-15T23:59:59Z',
+    created_at: '2024-04-04T09:00:00Z',
+    status: 'pending',
+    updated_at: '2024-04-04T09:00:00Z'
+  }
+]
+
+// 执行反馈数据
+export const taskFeedbacks = [
+  {
+    id: 1,
+    task_id: 2,
+    submitter_id: 3,
+    submitter_name: 'farmer',
+    completion_date: '2024-04-03T10:30:00Z',
+    actual_operation: '按照指示在西区使用了推荐的生物农药进行喷洒，覆盖面积约2亩',
+    content: '已完成喷洒作业，发现受害植株约占10%，已全部处理',
+    effectiveness: 4,
+    difficulties: '部分区域地形不平，喷洒难度较大',
+    images: ['/mock/feedback-images/1.jpg', '/mock/feedback-images/2.jpg'],
+    videos: [],
+    status: 'pending_review',
+    created_at: '2024-04-03T11:15:00Z',
+    updated_at: '2024-04-03T11:15:00Z'
+  }
+]
+
+// 反馈审核数据
+export const feedbackReviews = [
+  {
+    id: 1,
+    feedback_id: 1,
+    reviewer_id: 2,
+    reviewer_name: 'technician',
+    status: 'approved',
+    comments: '执行情况良好，请继续观察后续效果',
+    created_at: '2024-04-03T16:30:00Z',
+    updated_at: '2024-04-03T16:30:00Z'
+  }
+]
+
+// 任务类型选项
+export const taskTypes = [
+  { value: '施肥', label: '施肥' },
+  { value: '灌溉', label: '灌溉' },
+  { value: '病虫害防治', label: '病虫害防治' },
+  { value: '采收', label: '采收' },
+  { value: '整地', label: '整地' },
+  { value: '移栽', label: '移栽' },
+  { value: '打顶', label: '打顶' },
+  { value: '除草', label: '除草' }
+]
+
+// 任务优先级选项
+export const priorityOptions = [
+  { value: 'low', label: '低' },
+  { value: 'medium', label: '中' },
+  { value: 'high', label: '高' },
+  { value: 'urgent', label: '紧急' }
+]
+
+// 任务状态选项
+export const taskStatusOptions = [
+  { value: 'pending', label: '待执行' },
+  { value: 'in_progress', label: '执行中' },
+  { value: 'completed', label: '已完成' },
+  { value: 'overdue', label: '已逾期' },
+  { value: 'cancelled', label: '已取消' }
+]
+
+// 反馈审核状态选项
+export const reviewStatusOptions = [
+  { value: 'pending_review', label: '待审核' },
+  { value: 'approved', label: '已通过' },
+  { value: 'rejected', label: '已拒绝' },
+  { value: 'needs_revision', label: '需修改' }
+]
+
 export default [
   {
     url: '/api/data/drone-images/:fieldId',

@@ -39,8 +39,12 @@ const MonitoringPlan = () => import('@/views/llm/MonitoringPlan.vue')
 // 页面组件 - 执行任务与反馈
 const ExecutionTaskList = () => import('@/views/execution/ExecutionTaskList.vue')
 const ExecutionTaskDetail = () => import('@/views/execution/ExecutionTaskDetail.vue')
+const ExecutionTaskCreate = () => import('@/views/execution/ExecutionTaskCreate.vue')
+const ExecutionTaskEdit = () => import('@/views/execution/ExecutionTaskEdit.vue')
 const FeedbackSubmission = () => import('@/views/execution/FeedbackSubmission.vue')
 const FeedbackReview = () => import('@/views/execution/FeedbackReview.vue')
+const TaskAssignment = () => import('@/views/execution/TaskAssignment.vue')
+const EffectivenessEvaluation = () => import('@/views/execution/EffectivenessEvaluation.vue')
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -291,6 +295,36 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: 'execution/tasks/create',
+        name: 'ExecutionTaskCreate',
+        component: ExecutionTaskCreate,
+        meta: {
+          title: '创建执行任务',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
+      {
+        path: 'execution/tasks/edit/:id',
+        name: 'ExecutionTaskEdit',
+        component: ExecutionTaskEdit,
+        meta: {
+          title: '编辑执行任务',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
+      {
+        path: 'execution/tasks/assign',
+        name: 'TaskAssignment',
+        component: TaskAssignment,
+        meta: {
+          title: '任务分配',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
+      {
         path: 'execution/tasks/:id/feedback',
         name: 'FeedbackSubmission',
         component: FeedbackSubmission,
@@ -309,7 +343,17 @@ const routes: Array<RouteRecordRaw> = [
           requiresAuth: true,
           roles: ['admin', 'technician']
         }
-      }
+      },
+      {
+        path: 'execution/evaluation',
+        name: 'EffectivenessEvaluation',
+        component: EffectivenessEvaluation,
+        meta: {
+          title: '执行效果评估',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
     ]
   },
   {

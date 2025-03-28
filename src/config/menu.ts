@@ -108,8 +108,20 @@ export const menuItems: MenuItem[] = [
         icon: 'List'
       },
       {
+        title: '创建任务',
+        path: '/execution/tasks/create',
+        icon: 'Plus',
+        roles: ['admin', 'technician']
+      },
+      {
+        title: '任务分配',
+        path: '/execution/tasks/assign',
+        icon: 'User',
+        roles: ['admin', 'technician']
+      },
+      {
         title: '执行情况分析',
-        path: '/execution/analytics',
+        path: '/execution/evaluation',
         icon: 'DataAnalysis',
         roles: ['admin', 'technician']
       }

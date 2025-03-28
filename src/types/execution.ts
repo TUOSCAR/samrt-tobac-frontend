@@ -93,4 +93,43 @@ export interface FeedbackSubmitData {
   difficulties_encountered: string;
   submitted_by: number;
   media_urls: string[];
+}
+
+// 用户分配数据
+export interface UserAssignmentData {
+  task_ids: number[];
+  user_id: number;
+  assigned_by: number;
+}
+
+// 用户基本信息
+export interface User {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+  created_at: string;
+}
+
+// 评效数据
+export interface EffectivenessEvaluationData {
+  completion_rate: number;
+  effectiveness: number;
+  on_time_rate: number;
+  task_count_by_type: Record<ExecutionTaskType, number>;
+  task_count_by_status: Record<ExecutionTaskStatus, number>;
+  task_completion_trends: Array<{
+    month: string;
+    completed: number;
+    total: number;
+  }>;
+  farmer_performance: Array<{
+    farmer_id: number;
+    name: string;
+    completed: number;
+    on_time: number;
+    avg_rating: number;
+  }>;
 } 

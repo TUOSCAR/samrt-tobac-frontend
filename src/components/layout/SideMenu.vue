@@ -37,7 +37,9 @@
           <span>执行任务</span>
         </template>
         <el-menu-item index="/execution/tasks">任务列表</el-menu-item>
-        <el-menu-item index="/execution/analytics">执行情况分析</el-menu-item>
+        <el-menu-item index="/execution/tasks/create">创建任务</el-menu-item>
+        <el-menu-item index="/execution/tasks/assign">任务分配</el-menu-item>
+        <el-menu-item index="/execution/evaluation">执行情况分析</el-menu-item>
       </el-sub-menu>
     </template>
 
@@ -73,7 +75,9 @@
           <span>执行任务</span>
         </template>
         <el-menu-item index="/execution/tasks">任务列表</el-menu-item>
-        <el-menu-item index="/execution/analytics">执行情况分析</el-menu-item>
+        <el-menu-item index="/execution/tasks/create">创建任务</el-menu-item>
+        <el-menu-item index="/execution/tasks/assign">任务分配</el-menu-item>
+        <el-menu-item index="/execution/evaluation">执行情况分析</el-menu-item>
       </el-sub-menu>
     </template>
 
@@ -84,10 +88,13 @@
         <template #title>我的烟田</template>
       </el-menu-item>
       
-      <el-menu-item index="/execution/tasks">
-        <el-icon><SetUp /></el-icon>
-        <template #title>执行任务</template>
-      </el-menu-item>
+      <el-sub-menu index="execution">
+        <template #title>
+          <el-icon><SetUp /></el-icon>
+          <span>执行任务</span>
+        </template>
+        <el-menu-item index="/execution/tasks">我的任务</el-menu-item>
+      </el-sub-menu>
     </template>
   </el-menu>
 </template>
