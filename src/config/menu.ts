@@ -177,12 +177,6 @@ export const menuItems: MenuItem[] = [
         title: '会话记录',
         path: '/chat/history',
         icon: 'Document'
-      },
-      {
-        title: '地块相关问答',
-        path: '/chat/field',
-        icon: 'LocationInformation',
-        roles: ['technician', 'farmer']
       }
     ]
   },

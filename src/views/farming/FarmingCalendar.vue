@@ -141,10 +141,15 @@ const loadCalendarEvents = async () => {
     
     const res = await getFarmingCalendarEvents(params)
     
-    if (res.success) {
+    if (res.code === 200) {
       // 更新日历事件
       calendar.value?.removeAllEvents()
-      calendar.value?.addEventSource(res.data)
+      // 映射id为字符串类型以符合FullCalendar的要求
+      const events = res.data.map(event => ({
+        ...event,
+        id: String(event.id) // 将数字ID转换为字符串
+      }))
+      calendar.value?.addEventSource(events)
       
       // 更新当前视图的日期范围
       if (calendar.value) {

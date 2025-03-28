@@ -182,8 +182,22 @@ export const farmingOperations = [
 ];
 
 // 将农事操作数据转换为日历格式
-export const getFarmingCalendarEvents = () => {
-  return farmingOperations.map(op => {
+export const getFarmingCalendarEvents = (params: any = {}) => {
+  let operations = [...farmingOperations];
+  
+  // 筛选数据
+  if (params.field_id) {
+    operations = operations.filter(op => op.field_id === parseInt(params.field_id));
+  }
+  
+  if (params.start_date && params.end_date) {
+    operations = operations.filter(op => 
+      new Date(op.operation_date) >= new Date(params.start_date) && 
+      new Date(op.operation_date) <= new Date(params.end_date)
+    );
+  }
+
+  return operations.map(op => {
     // 获取操作类型的名称
     const operationType = farmingOperationTypes.find(type => type.type_code === op.operation_type);
     const typeName = operationType ? operationType.type_name : op.operation_type;
@@ -362,19 +376,7 @@ export const deleteFarmingOperation = (id: number) => {
 
 // 获取日历格式农事操作
 export const getFarmingCalendar = (params: any = {}) => {
-  let events = getFarmingCalendarEvents();
-  
-  // 筛选逻辑
-  if (params.field_id) {
-    events = events.filter(event => event.field_id === parseInt(params.field_id));
-  }
-  
-  if (params.start_date && params.end_date) {
-    events = events.filter(event => 
-      new Date(event.start) >= new Date(params.start_date) && 
-      new Date(event.start) <= new Date(params.end_date)
-    );
-  }
+  const events = getFarmingCalendarEvents(params);
   
   return {
     success: true,

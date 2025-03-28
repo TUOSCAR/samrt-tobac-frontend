@@ -2,9 +2,14 @@
   <div class="farming-record-list">
     <div class="page-header">
       <h2>农事记录</h2>
-      <el-button type="primary" @click="createRecord">
-        <el-icon><Plus /></el-icon>添加农事记录
-      </el-button>
+      <div class="actions">
+        <el-button type="success" @click="showStatistics">
+          <el-icon><DataAnalysis /></el-icon>统计分析
+        </el-button>
+        <el-button type="primary" @click="createRecord">
+          <el-icon><Plus /></el-icon>添加农事记录
+        </el-button>
+      </div>
     </div>
     
     <el-card>
@@ -132,14 +137,51 @@
         />
       </div>
     </el-card>
+    
+    <!-- 统计分析对话框 -->
+    <el-dialog
+      v-model="statisticsDialogVisible"
+      title="农事记录统计分析"
+      width="800px"
+      destroy-on-close
+    >
+      <div class="statistics-container" v-loading="loadingStats">
+        <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+          <el-tab-pane label="操作类型统计" name="type">
+            <div class="chart-container">
+              <div ref="typeChartRef" style="width: 100%; height: 400px;"></div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="地块作业统计" name="field">
+            <div class="chart-container">
+              <div ref="fieldChartRef" style="width: 100%; height: 400px;"></div>
+            </div>
+          </el-tab-pane>
+          <el-tab-pane label="时间趋势分析" name="time">
+            <div class="chart-container">
+              <div ref="timeChartRef" style="width: 100%; height: 400px;"></div>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, DataAnalysis } from '@element-plus/icons-vue'
+import * as echarts from 'echarts/core'
+import { BarChart, PieChart, LineChart } from 'echarts/charts'
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent
+} from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
 import { 
   getFarmingOperationList, 
   getFarmingOperationTypeList,
@@ -148,6 +190,18 @@ import {
 import { getAllFields } from '@/api/field'
 import { farmingOperationTypes } from '@/mock/farming'
 
+// 注册echarts组件
+echarts.use([
+  BarChart,
+  PieChart,
+  LineChart,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+  CanvasRenderer
+])
+
 // 定义状态变量
 const router = useRouter()
 const loading = ref(false)
@@ -155,6 +209,18 @@ const records = ref<any[]>([])
 const fields = ref<any[]>([])
 const operationTypes = ref<any[]>([])
 const dateRange = ref<[string, string] | null>(null)
+
+// 统计分析相关
+const statisticsDialogVisible = ref(false)
+const loadingStats = ref(false)
+const activeTab = ref('type')
+const typeChartRef = ref<HTMLElement | null>(null)
+const fieldChartRef = ref<HTMLElement | null>(null)
+const timeChartRef = ref<HTMLElement | null>(null)
+// 使用any类型暂时绕过类型检查问题
+const typeChart = ref<any>(null)
+const fieldChart = ref<any>(null)
+const timeChart = ref<any>(null)
 
 // 筛选条件
 const filter = reactive({
@@ -224,7 +290,7 @@ const loadRecords = async () => {
     
     const res = await getFarmingOperationList(params)
     
-    if (res.success) {
+    if (res.code === 200) {
       records.value = res.data
       pagination.total = res.meta.total
     } else {
@@ -330,6 +396,279 @@ const confirmDelete = (row: any) => {
   }).catch(() => {})
 }
 
+// 显示统计分析对话框
+const showStatistics = () => {
+  statisticsDialogVisible.value = true
+  generateStatistics()
+}
+
+// 生成统计分析图表
+const generateStatistics = async () => {
+  loadingStats.value = true
+  
+  try {
+    // 加载所有记录用于统计
+    const params = {
+      pageSize: 1000, // 加载大量数据用于统计
+      ...filter
+    }
+    
+    if (dateRange.value && dateRange.value.length === 2) {
+      params.start_date = dateRange.value[0]
+      params.end_date = dateRange.value[1]
+    }
+    
+    const res = await getFarmingOperationList(params)
+    
+    if (res.success) {
+      const allRecords = res.data
+      
+      // 初始化图表
+      if (typeChartRef.value && !typeChart.value) {
+        typeChart.value = echarts.init(typeChartRef.value)
+      }
+      
+      if (fieldChartRef.value && !fieldChart.value) {
+        fieldChart.value = echarts.init(fieldChartRef.value)
+      }
+      
+      if (timeChartRef.value && !timeChart.value) {
+        timeChart.value = echarts.init(timeChartRef.value)
+      }
+      
+      // 操作类型统计
+      if (typeChart.value) {
+        renderTypeChart(allRecords, typeChart.value)
+      }
+      
+      // 地块统计
+      if (fieldChart.value) {
+        renderFieldChart(allRecords, fieldChart.value)
+      }
+      
+      // 时间趋势分析
+      if (timeChart.value) {
+        renderTimeChart(allRecords, timeChart.value)
+      }
+    }
+  } catch (error) {
+    console.error('加载统计数据出错', error)
+    ElMessage.error('加载统计数据出错')
+  } finally {
+    loadingStats.value = false
+  }
+}
+
+// 渲染操作类型统计图表
+const renderTypeChart = (records: any[], chart: echarts.ECharts) => {
+  // 按操作类型分组统计
+  const typeStats = {} as Record<string, number>
+  
+  records.forEach(record => {
+    const type = record.operation_type
+    typeStats[type] = (typeStats[type] || 0) + 1
+  })
+  
+  // 转换为饼图数据
+  const pieData = Object.keys(typeStats).map(type => {
+    const typeName = getOperationTypeName(type)
+    return { value: typeStats[type], name: typeName }
+  })
+  
+  chart.setOption({
+    title: {
+      text: '农事操作类型分布',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{a} <br/>{b}: {c} ({d}%)'
+    },
+    legend: {
+      orient: 'vertical',
+      left: 'left',
+      data: pieData.map(item => item.name)
+    },
+    series: [
+      {
+        name: '操作类型',
+        type: 'pie',
+        radius: ['30%', '70%'],
+        avoidLabelOverlap: false,
+        label: {
+          show: true,
+          formatter: '{b}: {c} ({d}%)'
+        },
+        emphasis: {
+          label: {
+            show: true,
+            fontSize: '16',
+            fontWeight: 'bold'
+          }
+        },
+        data: pieData
+      }
+    ]
+  })
+}
+
+// 渲染地块作业统计图表
+const renderFieldChart = (records: any[], chart: echarts.ECharts) => {
+  // 按地块分组统计
+  const fieldStats = {} as Record<number, { count: number, area: number }>
+  
+  records.forEach(record => {
+    const fieldId = record.field_id
+    
+    if (!fieldStats[fieldId]) {
+      fieldStats[fieldId] = { count: 0, area: 0 }
+    }
+    
+    fieldStats[fieldId].count += 1
+    fieldStats[fieldId].area += record.operation_area || 0
+  })
+  
+  // 转换为柱状图数据
+  const fieldNames = Object.keys(fieldStats).map(id => getFieldName(parseInt(id)))
+  const counts = Object.values(fieldStats).map(stat => stat.count)
+  const areas = Object.values(fieldStats).map(stat => parseFloat(stat.area.toFixed(2)))
+  
+  chart.setOption({
+    title: {
+      text: '地块作业统计',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: {
+        type: 'shadow'
+      }
+    },
+    legend: {
+      data: ['作业次数', '作业面积(亩)'],
+      bottom: 10
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '15%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: fieldNames,
+      axisLabel: {
+        interval: 0,
+        rotate: 30
+      }
+    },
+    yAxis: [
+      {
+        type: 'value',
+        name: '次数',
+        position: 'left'
+      },
+      {
+        type: 'value',
+        name: '面积(亩)',
+        position: 'right'
+      }
+    ],
+    series: [
+      {
+        name: '作业次数',
+        type: 'bar',
+        data: counts
+      },
+      {
+        name: '作业面积(亩)',
+        type: 'bar',
+        yAxisIndex: 1,
+        data: areas
+      }
+    ]
+  })
+}
+
+// 渲染时间趋势分析图表
+const renderTimeChart = (records: any[], chart: echarts.ECharts) => {
+  // 按月份分组统计
+  const monthStats = {} as Record<string, number>
+  
+  records.forEach(record => {
+    const date = new Date(record.operation_date)
+    const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+    
+    monthStats[monthKey] = (monthStats[monthKey] || 0) + 1
+  })
+  
+  // 按日期排序
+  const sortedMonths = Object.keys(monthStats).sort()
+  const counts = sortedMonths.map(month => monthStats[month])
+  
+  chart.setOption({
+    title: {
+      text: '农事操作时间趋势',
+      left: 'center'
+    },
+    tooltip: {
+      trigger: 'axis'
+    },
+    xAxis: {
+      type: 'category',
+      data: sortedMonths,
+      axisLabel: {
+        interval: 0,
+        rotate: 30
+      }
+    },
+    yAxis: {
+      type: 'value',
+      name: '操作次数'
+    },
+    series: [
+      {
+        name: '操作次数',
+        type: 'line',
+        data: counts,
+        markPoint: {
+          data: [
+            { type: 'max', name: '最大值' },
+            { type: 'min', name: '最小值' }
+          ]
+        },
+        smooth: true
+      }
+    ]
+  })
+}
+
+// 监听窗口大小变化，重绘图表
+const handleResize = () => {
+  if (typeChart.value) {
+    typeChart.value.resize()
+  }
+  if (fieldChart.value) {
+    fieldChart.value.resize()
+  }
+  if (timeChart.value) {
+    timeChart.value.resize()
+  }
+}
+
+// 监听标签页切换，重绘当前图表
+const handleTabChange = (tab: string) => {
+  setTimeout(() => {
+    if (tab === 'type' && typeChart.value) {
+      typeChart.value.resize()
+    } else if (tab === 'field' && fieldChart.value) {
+      fieldChart.value.resize()
+    } else if (tab === 'time' && timeChart.value) {
+      timeChart.value.resize()
+    }
+  }, 50)
+}
+
 // 初始化加载数据
 onMounted(async () => {
   // 并行加载资源
@@ -340,6 +679,26 @@ onMounted(async () => {
   
   // 加载记录列表
   loadRecords()
+  
+  // 添加窗口大小调整监听器
+  window.addEventListener('resize', handleResize)
+})
+
+// 组件销毁前清理
+onBeforeUnmount(() => {
+  // 移除窗口大小调整监听器
+  window.removeEventListener('resize', handleResize)
+  
+  // 销毁图表实例
+  if (typeChart.value) {
+    typeChart.value.dispose()
+  }
+  if (fieldChart.value) {
+    fieldChart.value.dispose()
+  }
+  if (timeChart.value) {
+    timeChart.value.dispose()
+  }
 })
 </script>
 
@@ -357,6 +716,11 @@ onMounted(async () => {
 
 .page-header h2 {
   margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
 }
 
 .filter-container {
@@ -378,5 +742,13 @@ onMounted(async () => {
 
 :deep(.el-table__row) {
   cursor: pointer;
+}
+
+.statistics-container {
+  min-height: 450px;
+}
+
+.chart-container {
+  padding: 10px;
 }
 </style> 

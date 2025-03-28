@@ -158,7 +158,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { 
   getFarmingOperationById, 
   getFarmingOperationTypeList,
@@ -167,8 +167,9 @@ import {
 } from '@/api/farming'
 import { getAllFields } from '@/api/field'
 import { getUsers } from '@/api/system'
-import { getExecutionTaskList } from '@/api/execution'
+import { fetchExecutionTasks } from '@/api/execution'
 import { useUserStore } from '@/store/user'
+import type { ExecutionTaskStatus } from '@/types/execution'
 
 const route = useRoute()
 const router = useRouter()
@@ -179,6 +180,7 @@ const fields = ref<any[]>([])
 const operationTypes = ref<any[]>([])
 const users = ref<any[]>([])
 const executionTasks = ref<any[]>([])
+const taskLoading = ref(false)
 
 // 判断是否是编辑模式
 const isEdit = computed(() => {
@@ -197,7 +199,7 @@ const form = reactive({
   dosage: '',
   weather_condition: '',
   performed_by: userStore.user?.id || null,
-  recorded_by: userStore.user?.id || null,
+  recorded_by: null as number | null,
   execution_task_id: null as number | null,
   cost: 0,
   notes: ''
@@ -242,7 +244,7 @@ const resetForm = () => {
     // 设置默认值
     form.operation_date = new Date().toISOString()
     form.performed_by = userStore.user?.id || null
-    form.recorded_by = userStore.user?.id || null
+    form.recorded_by = null
   }
 }
 
@@ -256,7 +258,7 @@ const submitForm = async () => {
     loading.value = true
     
     // 设置记录人为当前用户
-    form.recorded_by = userStore.user?.id
+    form.recorded_by = userStore.user?.id ? Number(userStore.user.id) : null
     
     let res
     if (isEdit.value) {
@@ -267,9 +269,15 @@ const submitForm = async () => {
       res = await createFarmingOperationRecord(form)
     }
     
-    if (res.success) {
-      ElMessage.success(`${isEdit.value ? '更新' : '创建'}农事记录成功`)
-      router.push('/farming/records')
+    if (res.code === 200) {
+      ElMessage({
+        type: 'success',
+        message: `${isEdit.value ? '更新' : '创建'}农事记录成功`,
+        duration: 2000,
+        onClose: () => {
+          router.push('/farming/records')
+        }
+      })
     } else {
       ElMessage.error(`${isEdit.value ? '更新' : '创建'}农事记录失败: ${res.message}`)
     }
@@ -309,27 +317,28 @@ const loadOperationTypes = async () => {
 const loadUsers = async () => {
   try {
     const res = await getUsers()
-    if (res.success) {
-      users.value = res.data
-    }
+    users.value = res.data || []
   } catch (error) {
-    console.error('加载用户列表出错', error)
+    console.error('加载用户列表失败', error)
   }
 }
 
 // 加载执行任务列表
 const loadExecutionTasks = async () => {
+  taskLoading.value = true
   try {
-    const res = await getExecutionTaskList({
-      page: 1,
-      pageSize: 100,
-      status: 'in_progress,completed'
+    // 获取执行任务列表
+    const response = await fetchExecutionTasks({
+      field_id: form.field_id ? String(form.field_id) : undefined,
+      status: 'in_progress,completed' as ExecutionTaskStatus
     })
-    if (res.success) {
-      executionTasks.value = res.data
-    }
+    
+    executionTasks.value = response.data || []
   } catch (error) {
-    console.error('加载执行任务列表出错', error)
+    console.error('加载执行任务失败', error)
+    ElMessage.error('加载执行任务列表失败')
+  } finally {
+    taskLoading.value = false
   }
 }
 
