@@ -2,7 +2,7 @@
   <div class="execution-task-list">
     <div class="header">
       <div class="title-wrapper">
-        <h2>决策执行任务管理</h2>
+        <h2>{{ pageTitle }}</h2>
         <el-tag v-if="taskCount > 0" type="info" effect="plain">共 {{ taskCount }} 个任务</el-tag>
       </div>
       <div class="action-wrapper">
@@ -23,6 +23,9 @@
           <el-select v-model="filterForm.priority" placeholder="全部优先级" clearable>
             <el-option v-for="(value, key) in priorityOptions" :key="key" :label="value" :value="key" />
           </el-select>
+        </el-form-item>
+        <el-form-item label="分配给">
+          <el-input v-model="filterForm.assigned_to" placeholder="输入用户ID或名称" />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleFilter">筛选</el-button>
@@ -72,7 +75,7 @@
       <el-table-column label="操作" width="180" fixed="right">
         <template #default="{ row }">
           <el-button link type="primary" @click.stop="viewTaskDetail(row.id)">查看</el-button>
-          <el-dropdown @command="(command) => handleCommandWithRow(command, row)" trigger="click">
+          <el-dropdown @command="command => handleCommandWithRow(command, row)" trigger="click">
             <el-button link type="primary">
               更多<el-icon><ArrowDown /></el-icon>
             </el-button>
@@ -113,26 +116,117 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { Plus, ArrowDown } from '@element-plus/icons-vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { fetchExecutionTasks, updateTaskStatus } from '@/api/execution'
 import { EXECUTION_STATUS, PRIORITY, EXECUTION_TYPES } from '@/mock/execution'
 import type { ExecutionTask, ExecutionTaskStatus, Priority, ExecutionTaskParams } from '@/types/execution'
+import { useUserStore } from '@/store/user'
+
+// 接收参数
+const props = defineProps({
+  filterByPendingFeedback: {
+    type: Boolean,
+    default: false
+  },
+  filterByPendingReview: {
+    type: Boolean,
+    default: false
+  }
+})
 
 const router = useRouter()
+const userStore = useUserStore()
 const loading = ref(false)
 const taskList = ref<ExecutionTask[]>([])
 const taskCount = ref(0)
 const currentPage = ref(1)
 const pageSize = ref(10)
 
+// 标题计算属性
+const pageTitle = computed(() => {
+  if (props.filterByPendingFeedback) {
+    return '待提交反馈任务'
+  } else if (props.filterByPendingReview) {
+    return '待审核反馈任务'
+  }
+  return '决策执行任务管理'
+})
+
 // 筛选表单
 const filterForm = reactive({
   status: '' as ExecutionTaskStatus | '',
-  priority: '' as Priority | ''
+  priority: '' as Priority | '',
+  assigned_to: '' as string | number
 })
+
+// 获取任务列表
+const fetchTasks = async () => {
+  loading.value = true
+  try {
+    const params: ExecutionTaskParams = {
+      page: currentPage.value,
+      page_size: pageSize.value
+    }
+    
+    if (filterForm.status) {
+      params.status = filterForm.status as ExecutionTaskStatus
+    }
+    
+    if (filterForm.priority) {
+      params.priority = filterForm.priority as Priority
+    }
+    
+    if (filterForm.assigned_to) {
+      params.assigned_to = filterForm.assigned_to
+    }
+    
+    const res = await fetchExecutionTasks(params)
+    if (res.success) {
+      taskList.value = res.data
+      taskCount.value = res.meta.total
+    } else {
+      ElMessage.error(res.message || '获取任务列表失败')
+    }
+  } catch (error) {
+    console.error('获取任务列表出错:', error)
+    ElMessage.error('获取任务列表出错')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 设置初始过滤条件
+const setupInitialFilters = () => {
+  // 重置筛选条件
+  filterForm.status = ''
+  filterForm.priority = ''
+  filterForm.assigned_to = ''
+  
+  // 根据特定视图设置筛选条件
+  if (props.filterByPendingFeedback) {
+    // 待提交反馈：进行中的任务，分配给当前用户（烟农）
+    filterForm.status = EXECUTION_STATUS.IN_PROGRESS
+    if (userStore.user) {
+      filterForm.assigned_to = userStore.user.id
+    }
+  } else if (props.filterByPendingReview) {
+    // 待审核反馈：已提交反馈的任务
+    filterForm.status = EXECUTION_STATUS.FEEDBACK_SUBMITTED
+  }
+}
+
+// 当过滤条件变化时更新数据
+watch(
+  [() => props.filterByPendingFeedback, () => props.filterByPendingReview],
+  () => {
+    setupInitialFilters()
+    fetchTasks()
+  },
+  { immediate: true }
+)
 
 // 状态和优先级选项
 const statusOptions = {
@@ -237,38 +331,6 @@ const canReviewFeedback = (status: string) => {
   return status === EXECUTION_STATUS.FEEDBACK_SUBMITTED
 }
 
-// 获取任务列表
-const fetchTasks = async () => {
-  loading.value = true
-  try {
-    const params: ExecutionTaskParams = {
-      page: currentPage.value,
-      page_size: pageSize.value
-    }
-    
-    if (filterForm.status) {
-      params.status = filterForm.status as ExecutionTaskStatus
-    }
-    
-    if (filterForm.priority) {
-      params.priority = filterForm.priority as Priority
-    }
-    
-    const res = await fetchExecutionTasks(params)
-    if (res.success) {
-      taskList.value = res.data
-      taskCount.value = res.meta.total
-    } else {
-      ElMessage.error(res.message || '获取任务列表失败')
-    }
-  } catch (error) {
-    console.error('获取任务列表出错:', error)
-    ElMessage.error('获取任务列表出错')
-  } finally {
-    loading.value = false
-  }
-}
-
 // 筛选处理
 const handleFilter = () => {
   currentPage.value = 1
@@ -279,6 +341,7 @@ const handleFilter = () => {
 const resetFilter = () => {
   filterForm.status = ''
   filterForm.priority = ''
+  filterForm.assigned_to = ''
   currentPage.value = 1
   fetchTasks()
 }
@@ -312,7 +375,7 @@ const goToCreateTask = () => {
 }
 
 // 处理下拉菜单命令
-const handleCommandWithRow = (command: any, row: ExecutionTask) => {
+const handleCommandWithRow = (command: string, row: ExecutionTask) => {
   switch (command) {
     case 'edit':
       router.push(`/execution/tasks/edit/${row.id}`)

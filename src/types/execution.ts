@@ -28,18 +28,26 @@ export type FeedbackReviewStatus = 'pending' | 'approved' | 'rejected';
 export interface ExecutionTask {
   id: number;
   task_code: string;
-  recommendation_id: number;
   field_id: number;
-  task_type: ExecutionTaskType;
+  field_name?: string;
   task_content: string;
-  assigned_to: number;
-  assigned_by: number;
-  assigned_at: string;
   due_date: string;
-  priority: Priority;
-  status: ExecutionTaskStatus;
-  completion_percentage: number;
-  notification_sent: boolean;
+  priority: Priority | string;
+  status: ExecutionTaskStatus | string;
+  // 兼容新旧字段
+  recommendation_id?: number;
+  assignee_id?: number;
+  assignee_name?: string;
+  creator_id?: number;
+  creator_name?: string;
+  created_at?: string;
+  updated_at?: string;
+  task_type: ExecutionTaskType | string;
+  assigned_to?: number;
+  assigned_by?: number;
+  assigned_at?: string;
+  completion_percentage?: number;
+  notification_sent?: boolean;
 }
 
 // 执行反馈接口

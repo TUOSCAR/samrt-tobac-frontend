@@ -108,6 +108,18 @@ export const menuItems: MenuItem[] = [
         icon: 'List'
       },
       {
+        title: '待提交反馈',
+        path: '/execution/pending-feedbacks',
+        icon: 'Edit',
+        roles: ['farmer']
+      },
+      {
+        title: '待审核反馈',
+        path: '/execution/pending-reviews',
+        icon: 'Check',
+        roles: ['admin', 'technician']
+      },
+      {
         title: '创建任务',
         path: '/execution/tasks/create',
         icon: 'Plus',

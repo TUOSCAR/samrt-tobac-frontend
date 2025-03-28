@@ -39,6 +39,7 @@
         <el-menu-item index="/execution/tasks">任务列表</el-menu-item>
         <el-menu-item index="/execution/tasks/create">创建任务</el-menu-item>
         <el-menu-item index="/execution/tasks/assign">任务分配</el-menu-item>
+        <el-menu-item index="/execution/pending-reviews">待审核反馈</el-menu-item>
         <el-menu-item index="/execution/evaluation">执行情况分析</el-menu-item>
       </el-sub-menu>
     </template>
@@ -77,6 +78,7 @@
         <el-menu-item index="/execution/tasks">任务列表</el-menu-item>
         <el-menu-item index="/execution/tasks/create">创建任务</el-menu-item>
         <el-menu-item index="/execution/tasks/assign">任务分配</el-menu-item>
+        <el-menu-item index="/execution/pending-reviews">待审核反馈</el-menu-item>
         <el-menu-item index="/execution/evaluation">执行情况分析</el-menu-item>
       </el-sub-menu>
     </template>
@@ -94,6 +96,7 @@
           <span>执行任务</span>
         </template>
         <el-menu-item index="/execution/tasks">我的任务</el-menu-item>
+        <el-menu-item index="/execution/pending-feedbacks">待提交反馈</el-menu-item>
       </el-sub-menu>
     </template>
   </el-menu>

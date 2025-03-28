@@ -345,6 +345,28 @@ const routes: Array<RouteRecordRaw> = [
         }
       },
       {
+        path: 'execution/pending-feedbacks',
+        name: 'PendingFeedbacks',
+        component: ExecutionTaskList,
+        props: { filterByPendingFeedback: true },
+        meta: {
+          title: '待提交反馈',
+          requiresAuth: true,
+          roles: ['farmer']
+        }
+      },
+      {
+        path: 'execution/pending-reviews',
+        name: 'PendingReviews',
+        component: ExecutionTaskList,
+        props: { filterByPendingReview: true },
+        meta: {
+          title: '待审核反馈',
+          requiresAuth: true,
+          roles: ['admin', 'technician']
+        }
+      },
+      {
         path: 'execution/evaluation',
         name: 'EffectivenessEvaluation',
         component: EffectivenessEvaluation,
