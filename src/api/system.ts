@@ -22,6 +22,18 @@ export interface SystemParameter {
   description: string
 }
 
+export interface AnalysisParameter {
+  id: number
+  group: string
+  name: string
+  key: string
+  value: string
+  defaultValue: string
+  description: string
+  type: 'text' | 'number' | 'boolean' | 'select'
+  options?: { label: string; value: string }[]
+}
+
 export const getUsers = () => {
   return request<User[]>({
     url: '/api/system/users',
@@ -71,5 +83,28 @@ export const updateSystemParameter = (id: number, data: Partial<SystemParameter>
     url: `/api/system/parameters/${id}`,
     method: 'put',
     data
+  })
+}
+
+export const getAnalysisParameters = (group?: string) => {
+  return request<AnalysisParameter[]>({
+    url: '/api/system/analysis-parameters',
+    method: 'get',
+    params: { group }
+  })
+}
+
+export const updateAnalysisParameter = (id: number, data: Partial<AnalysisParameter>) => {
+  return request<AnalysisParameter>({
+    url: `/api/system/analysis-parameters/${id}`,
+    method: 'put',
+    data
+  })
+}
+
+export const testAnalysisParameter = (id: number) => {
+  return request({
+    url: `/api/system/analysis-parameters/${id}/test`,
+    method: 'post'
   })
 } 

@@ -57,6 +57,13 @@ const AIChat = () => import('@/views/chat/AIChat.vue')
 const ChatHistory = () => import('@/views/chat/ChatHistory.vue')
 const FieldChat = () => import('@/views/chat/FieldChat.vue')
 
+// 系统配置与用户管理
+const UserList = () => import('@/views/system/UserList.vue')
+const UserDetail = () => import('@/views/system/UserDetail.vue')
+const PermissionConfig = () => import('@/views/system/PermissionConfig.vue')
+const SystemParameter = () => import('@/views/system/SystemParameter.vue')
+const AnalysisParameter = () => import('@/views/system/AnalysisParameter.vue')
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/login',
@@ -437,6 +444,58 @@ const routes: Array<RouteRecordRaw> = [
           title: '农事记录详情',
           requiresAuth: true,
           roles: ['admin', 'technician', 'farmer']
+        }
+      },
+      
+      // 系统配置与用户管理路由
+      {
+        path: 'system/users',
+        name: 'UserList',
+        component: UserList,
+        meta: {
+          title: '用户管理',
+          requiresAuth: true,
+          roles: ['admin']
+        }
+      },
+      {
+        path: 'system/users/:id',
+        name: 'UserDetail',
+        component: UserDetail,
+        meta: {
+          title: '用户详情',
+          requiresAuth: true,
+          roles: ['admin']
+        }
+      },
+      {
+        path: 'system/permissions',
+        name: 'PermissionConfig',
+        component: PermissionConfig,
+        meta: {
+          title: '权限配置',
+          requiresAuth: true,
+          roles: ['admin']
+        }
+      },
+      {
+        path: 'system/parameters',
+        name: 'SystemParameter',
+        component: SystemParameter,
+        meta: {
+          title: '系统参数设置',
+          requiresAuth: true,
+          roles: ['admin']
+        }
+      },
+      {
+        path: 'system/analysis-parameters',
+        name: 'AnalysisParameter',
+        component: AnalysisParameter,
+        meta: {
+          title: '分析参数配置',
+          requiresAuth: true,
+          roles: ['admin']
         }
       },
       

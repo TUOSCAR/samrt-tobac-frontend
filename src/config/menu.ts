@@ -246,6 +246,11 @@ export const menuItems: MenuItem[] = [
         title: '系统参数',
         path: '/system/parameters',
         icon: 'Tools'
+      },
+      {
+        title: '分析参数配置',
+        path: '/system/analysis-parameters',
+        icon: 'DataAnalysis'
       }
     ]
   }
