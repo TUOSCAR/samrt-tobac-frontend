@@ -353,30 +353,23 @@ async function loadPlan() {
   try {
     loading.value = true
     
+    let res: any;
+    
     if (selectedTask.value) {
       // 加载指定任务的监测规划
-      const res = await getTaskMonitoringPlan(parseInt(selectedTask.value))
-      
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        selectedPlan.value = res.data[0]
-        
-        // 初始化调整表单
-        initAdjustForm()
-      } else {
-        selectedPlan.value = null
-      }
+      res = await getTaskMonitoringPlan(parseInt(selectedTask.value))
     } else {
       // 加载所有监测规划
-      const res = await getMonitoringPlans()
+      res = await getMonitoringPlans()
+    }
+    
+    if (Array.isArray(res.data) && res.data.length > 0) {
+      selectedPlan.value = res.data[0]
       
-      if (Array.isArray(res.data) && res.data.length > 0) {
-        selectedPlan.value = res.data[0]
-        
-        // 初始化调整表单
-        initAdjustForm()
-      } else {
-        selectedPlan.value = null
-      }
+      // 初始化调整表单
+      initAdjustForm()
+    } else {
+      selectedPlan.value = null
     }
     
     // 更新URL参数

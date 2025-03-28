@@ -26,7 +26,8 @@ import {
   getStrategyRecommendations,
   getAnalysisReports,
   getMonitoringPlans,
-  updateMonitoringPlanStatus
+  updateMonitoringPlanStatus,
+  createTaskFromPlan
 } from './llm'
 
 // 生成简单的字段数据
@@ -116,83 +117,123 @@ const mockApis: Record<string, any> = {
   
   // 大模型分析相关
   // 异常诊断
-  'GET /api/llm/anomaly-diagnosis/': ({ query }: { query: any }) => getAnomalyDiagnosis(query),
-  'GET /api/llm/anomaly-diagnosis/:id/': ({ params }: { params: any }) => {
-    const result = getAnomalyDiagnosis({}).data.find(item => item.id === parseInt(params.id));
+  'GET /api/llm/anomaly-diagnosis': ({ query }: { query: any }) => getAnomalyDiagnosis(),
+  'GET /api/llm/anomaly-diagnosis/:id': ({ params }: { params: any }) => {
+    const result = getAnomalyDiagnosis().data.find(item => item.id === parseInt(params.id));
     return {
-      success: true,
       code: 200,
-      message: '获取异常诊断详情成功',
-      data: result
+      data: result,
+      message: 'success'
     };
   },
-  'GET /api/llm/anomaly-diagnosis/task/:taskId/': ({ params }: { params: any }) => 
-    getAnomalyDiagnosis({ monitoring_task_id: params.taskId }),
-  'GET /api/llm/anomaly-diagnosis/field/:fieldId/': ({ params }: { params: any }) => 
-    getAnomalyDiagnosis({ field_id: params.fieldId }),
-  'GET /api/llm/anomaly-diagnosis/type-distribution/': getAnomalyTypes,
-  'GET /api/llm/anomaly-diagnosis/severity-distribution/': getSeverityDistribution,
-  'GET /api/llm/anomaly-diagnosis/field/:fieldId/areas/': ({ params }: { params: any }) => 
+  'GET /api/llm/anomaly-diagnosis/task/:taskId': ({ params }: { params: any }) => 
+    getAnomalyDiagnosis(),
+  'GET /api/llm/anomaly-diagnosis/field/:fieldId': ({ params }: { params: any }) => 
+    getAnomalyDiagnosis(),
+  'GET /api/llm/anomaly-diagnosis/type-distribution': () => getAnomalyTypes(),
+  'GET /api/llm/anomaly-diagnosis/severity-distribution': () => getSeverityDistribution(),
+  'GET /api/llm/anomaly-diagnosis/field/:fieldId/areas': ({ params }: { params: any }) => 
     getAnomalyAreas({ field_id: params.fieldId }),
   
   // 策略推演
-  'GET /api/llm/strategy-recommendations/': ({ query }: { query: any }) => getStrategyRecommendations(query),
-  'GET /api/llm/strategy-recommendations/:id/': ({ params }: { params: any }) => {
-    const result = getStrategyRecommendations({}).data.find(item => item.id === parseInt(params.id));
+  'GET /api/llm/strategy-recommendations': ({ query }: { query: any }) => {
+    // 处理任务和地块筛选
+    if (query.taskId) {
+      const data = getStrategyRecommendations().data.filter((item: any) => 
+        item.task_id === parseInt(query.taskId)
+      );
+      return {
+        code: 200,
+        data,
+        message: 'success'
+      };
+    }
+    
+    if (query.fieldId) {
+      const data = getStrategyRecommendations().data.filter((item: any) => 
+        item.field_id === parseInt(query.fieldId)
+      );
+      return {
+        code: 200,
+        data,
+        message: 'success'
+      };
+    }
+    
+    return getStrategyRecommendations();
+  },
+  'GET /api/llm/strategy-recommendations/:id': ({ params }: { params: any }) => {
+    const result = getStrategyRecommendations().data.find(item => item.id === parseInt(params.id));
     return {
-      success: true,
       code: 200,
-      message: '获取策略推演详情成功',
-      data: result
+      data: result,
+      message: 'success'
     };
   },
-  'GET /api/llm/strategy-recommendations/task/:taskId/': ({ params }: { params: any }) => 
-    getStrategyRecommendations({ monitoring_task_id: params.taskId }),
-  'GET /api/llm/strategy-recommendations/field/:fieldId/': ({ params }: { params: any }) => 
-    getStrategyRecommendations({ field_id: params.fieldId }),
   
   // 分析报告
-  'GET /api/llm/reports/': ({ query }: { query: any }) => getAnalysisReports(query),
-  'GET /api/llm/reports/:id/': ({ params }: { params: any }) => {
-    const result = getAnalysisReports({}).data.find(item => item.id === parseInt(params.id));
+  'GET /api/llm/reports': ({ query }: { query: any }) => {
+    // 处理任务和地块筛选
+    if (query.taskId) {
+      const data = getAnalysisReports().data.filter((item: any) => 
+        item.task_id === parseInt(query.taskId)
+      );
+      return {
+        code: 200,
+        data,
+        message: 'success'
+      };
+    }
+    
+    if (query.fieldId) {
+      const data = getAnalysisReports().data.filter((item: any) => 
+        item.field_id === parseInt(query.fieldId)
+      );
+      return {
+        code: 200,
+        data,
+        message: 'success'
+      };
+    }
+    
+    return getAnalysisReports();
+  },
+  'GET /api/llm/reports/:id': ({ params }: { params: any }) => {
+    const result = getAnalysisReports().data.find(item => item.id === parseInt(params.id));
     return {
-      success: true,
       code: 200,
-      message: '获取分析报告详情成功',
-      data: result
+      data: result,
+      message: 'success'
     };
   },
-  'GET /api/llm/reports/task/:taskId/': ({ params }: { params: any }) => 
-    getAnalysisReports({ monitoring_task_id: params.taskId }),
-  'GET /api/llm/reports/field/:fieldId/': ({ params }: { params: any }) => 
-    getAnalysisReports({ field_id: params.fieldId }),
-  'GET /api/llm/reports/:id/export/': ({ params }: { params: any }) => {
-    // 实际导出操作由前端处理
+  'GET /api/llm/reports/:id/export': ({ params, query }: { params: any, query: any }) => {
     return {
-      success: true,
       code: 200,
-      message: '导出报告请求成功',
-      data: { id: params.id }
+      data: { id: params.id, format: query.format },
+      message: 'success'
     };
   },
   
   // 下次监测规划
-  'GET /api/llm/next-monitoring/plan/': ({ query }: { query: any }) => getMonitoringPlans(query),
-  'GET /api/llm/next-monitoring/plan/task/:taskId/': ({ params }: { params: any }) => 
-    getMonitoringPlans({ monitoring_task_id: params.taskId }),
-  'PUT /api/llm/next-monitoring/plan/:id/status/': ({ params, body }: { params: any, body: any }) => 
-    updateMonitoringPlanStatus(parseInt(params.id), body.status),
-  'POST /api/llm/next-monitoring/plan/:id/create-task/': ({ params }: { params: any }) => {
-    return {
-      success: true,
-      code: 200,
-      message: '创建新监测任务成功',
-      data: {
-        taskId: new Date().getTime(),
-        planId: params.id
-      }
-    };
-  }
+  'GET /api/llm/next-monitoring/plan': ({ query }: { query: any }) => {
+    // 处理任务筛选
+    if (query.taskId) {
+      const data = getMonitoringPlans().data.filter((item: any) => 
+        item.task_id === parseInt(query.taskId)
+      );
+      return {
+        code: 200,
+        data,
+        message: 'success'
+      };
+    }
+    
+    return getMonitoringPlans();
+  },
+  'PUT /api/llm/next-monitoring/plan/:id/status': ({ params, body }: { params: any, body: any }) => 
+    updateMonitoringPlanStatus(),
+  'POST /api/llm/next-monitoring/plan/:id/create-task': ({ params }: { params: any }) => 
+    createTaskFromPlan(),
 }
 
 // 判断是否使用Mock数据
@@ -231,12 +272,12 @@ export function getMockHandler(url: string, method: string) {
 }
 
 // 判断请求是否匹配模式
-function isMatchPattern(pattern: string, actual: string) {
+function isMatchPattern(apiPattern: string, actual: string) {
   // 如果模式和实际路径完全匹配，返回true
-  if (pattern === actual) return true
+  if (apiPattern === actual) return true
   
   // 分解模式和实际路径
-  const [patternMethod, patternPath] = pattern.split(' ')
+  const [patternMethod, patternPath] = apiPattern.split(' ')
   const [actualMethod, actualPath] = actual.split(' ')
   
   // 如果方法不同，返回false

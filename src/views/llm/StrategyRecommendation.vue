@@ -295,14 +295,12 @@ const formattedSteps = computed(() => {
     return []
   }
   
-  const content = selectedStrategy.value.recommendation_content.trim()
+  // 将推荐内容按换行符拆分，去除空行，提取步骤
+  const lines = selectedStrategy.value.recommendation_content
+    .trim()
+    .split('\n')
+    .filter((line: string) => line.trim() !== '')
   
-  // 移除开头结尾的空白行
-  const lines = content.split('\n')
-    .map((line: string) => line.trim())
-    .filter((line: string) => line)
-  
-  // 尝试提取步骤
   return lines
 })
 
@@ -327,7 +325,7 @@ onMounted(async () => {
       selectedField.value = fieldList.value[0].id
     }
     
-    await loadStrategies()
+    await loadResults()
   }
   
   initCharts()
@@ -361,30 +359,33 @@ async function loadFields(taskId: string) {
   }
 }
 
-// 加载策略推演
-async function loadStrategies() {
+// 加载策略推演结果
+async function loadResults() {
   try {
     loading.value = true
     
+    // 加载策略推演结果
+    let res: any
     if (selectedField.value) {
-      // 加载特定地块的策略
-      const res = await getFieldStrategyRecommendations(parseInt(selectedField.value))
-      strategyList.value = res.data
+      res = await getFieldStrategyRecommendations(parseInt(selectedField.value))
     } else if (selectedTask.value) {
-      // 加载任务的所有策略
-      const res = await getTaskStrategyRecommendations(parseInt(selectedTask.value))
-      strategyList.value = res.data
+      res = await getTaskStrategyRecommendations(parseInt(selectedTask.value))
     } else {
-      // 加载所有策略
-      const res = await getStrategyRecommendations()
-      strategyList.value = res.data
+      res = await getStrategyRecommendations()
     }
+    
+    strategyList.value = Array.isArray(res.data) ? res.data : []
     
     // 设置选中的策略
     if (strategyList.value.length > 0) {
       selectedStrategy.value = strategyList.value[0]
     } else {
       selectedStrategy.value = null
+    }
+    
+    // 更新优先级图表
+    if (strategyList.value.length > 0) {
+      updatePriorityChart()
     }
     
     // 更新URL参数
@@ -396,29 +397,30 @@ async function loadStrategies() {
       }
     })
     
-    // 更新优先级图表
-    if (priorityChart) {
-      updatePriorityChart()
-    }
-    
     loading.value = false
   } catch (error) {
-    console.error('加载策略推演失败', error)
-    ElMessage.error('加载策略推演失败')
+    console.error('加载策略推演结果失败', error)
+    ElMessage.error('加载策略推演结果失败')
     loading.value = false
   }
 }
 
 // 初始化图表
 function initCharts() {
-  // 初始化优先级图表
-  priorityChart = echarts.init(document.getElementById('priority-chart'))
-  updatePriorityChart()
-  
-  // 窗口大小变化时重新渲染图表
-  window.addEventListener('resize', () => {
-    priorityChart && priorityChart.resize()
-  })
+  // 等待下一个渲染周期，确保DOM元素已经渲染
+  setTimeout(() => {
+    // 初始化优先级图表
+    const priorityChartEl = document.getElementById('priority-chart');
+    if (priorityChartEl) {
+      priorityChart = echarts.init(priorityChartEl);
+      updatePriorityChart();
+      
+      // 窗口大小变化时重新渲染图表
+      window.addEventListener('resize', () => {
+        priorityChart && priorityChart.resize();
+      });
+    }
+  }, 100);
 }
 
 // 更新优先级图表
@@ -521,14 +523,14 @@ watch(selectedTask, async (newValue) => {
   if (newValue) {
     await loadFields(newValue)
     selectedField.value = fieldList.value.length > 0 ? fieldList.value[0].id : ''
-    await loadStrategies()
+    await loadResults()
   }
 })
 
 // 监听地块变化
 watch(selectedField, async (newValue) => {
   if (newValue) {
-    await loadStrategies()
+    await loadResults()
   }
 })
 
@@ -613,7 +615,7 @@ function handleFieldChange() {
 }
 
 function handleRefresh() {
-  loadStrategies()
+  loadResults()
 }
 
 function handleExport() {

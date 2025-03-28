@@ -5,11 +5,18 @@
         <div class="card-header">
           <h3>分析报告</h3>
           <div class="operations">
-            <el-button-group>
-              <el-button type="primary" @click="handleRefresh">
-                <el-icon><Refresh /></el-icon>刷新
-              </el-button>
-            </el-button-group>
+            <el-dropdown @command="exportReport" split-button type="primary">
+              导出
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item command="pdf">导出为PDF</el-dropdown-item>
+                  <el-dropdown-item command="word">导出为Word</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-button @click="handleRefresh" class="ml-2">
+              <el-icon><Refresh /></el-icon>刷新
+            </el-button>
           </div>
         </div>
       </template>
@@ -110,10 +117,10 @@
                     <el-button @click="toggleReportExpand" icon="FullScreen" circle />
                   </el-tooltip>
                   <el-tooltip content="导出PDF" placement="top">
-                    <el-button @click="handleExport('pdf')" icon="Document" circle />
+                    <el-button @click="exportReport('pdf')" icon="Document" circle />
                   </el-tooltip>
                   <el-tooltip content="导出Word" placement="top">
-                    <el-button @click="handleExport('word')" icon="DocumentCopy" circle />
+                    <el-button @click="exportReport('word')" icon="DocumentCopy" circle />
                   </el-tooltip>
                   <el-tooltip content="打印" placement="top">
                     <el-button @click="handlePrint" icon="Printer" circle />
@@ -178,8 +185,8 @@
           </template>
         </el-alert>
         <div class="action-buttons">
-          <el-button type="primary" @click="goToStrategy">查看策略推演</el-button>
-          <el-button @click="goToMonitoringPlan">查看监测规划</el-button>
+          <el-button type="primary" @click="viewStrategy">查看策略推演</el-button>
+          <el-button @click="viewMonitoringPlan">查看监测规划</el-button>
         </div>
       </div>
     </el-card>
@@ -194,26 +201,26 @@ import { getTaskList } from '@/api/task'
 import { getFieldsByTask } from '@/api/field'
 import {
   getAnalysisReports,
+  getAnalysisReportDetail,
   getTaskAnalysisReports,
   getFieldAnalysisReports,
-  getAnalysisReportDetail,
   exportAnalysisReport
 } from '@/api/llm'
 
-// 路由
-const route = useRoute()
-const router = useRouter()
-
-// 数据变量
+// 定义数据
 const taskList = ref<any[]>([])
 const fieldList = ref<any[]>([])
 const selectedTask = ref('')
 const selectedField = ref('')
 const reportList = ref<any[]>([])
 const selectedReport = ref<any>(null)
-const loading = ref(false)
 const isReportExpanded = ref(false)
+const loading = ref(false)
 const reportContent = ref<HTMLElement | null>(null)
+
+// 路由
+const route = useRoute()
+const router = useRouter()
 
 // 初始化
 onMounted(async () => {
@@ -237,16 +244,20 @@ onMounted(async () => {
     
     await loadReports()
     
-    // 如果URL中包含reportId，则选择对应报告
     if (reportId && reportList.value.length > 0) {
-      const report = reportList.value.find(r => r.id === parseInt(reportId))
+      const report = reportList.value.find(r => r.id.toString() === reportId)
       if (report) {
-        selectReport(report)
+        selectedReport.value = report
+        isReportExpanded.value = true
       }
+    } else if (reportList.value.length > 0) {
+      selectedReport.value = reportList.value[0]
     }
   } else {
-    // 默认加载所有报告
     await loadReports()
+    if (reportList.value.length > 0) {
+      selectedReport.value = reportList.value[0]
+    }
   }
 })
 
@@ -255,7 +266,7 @@ async function loadTasks() {
   try {
     loading.value = true
     const res = await getTaskList({ page: 1, pageSize: 100 })
-    taskList.value = res.data.list
+    taskList.value = res.data.list || []
     loading.value = false
   } catch (error) {
     console.error('加载任务失败', error)
@@ -278,29 +289,22 @@ async function loadFields(taskId: string) {
   }
 }
 
-// 加载报告
+// 加载报告列表
 async function loadReports() {
   try {
     loading.value = true
     
-    let res
+    let res: any
+    
     if (selectedField.value) {
-      // 加载特定地块的报告
       res = await getFieldAnalysisReports(parseInt(selectedField.value))
     } else if (selectedTask.value) {
-      // 加载任务的所有报告
       res = await getTaskAnalysisReports(parseInt(selectedTask.value))
     } else {
-      // 加载所有报告
       res = await getAnalysisReports()
     }
     
     reportList.value = Array.isArray(res.data) ? res.data : []
-    
-    // 如果已选择报告不在新的报告列表中，清除选择
-    if (selectedReport.value && !reportList.value.find(r => r.id === selectedReport.value.id)) {
-      selectedReport.value = null
-    }
     
     // 更新URL参数
     router.push({
@@ -308,50 +312,42 @@ async function loadReports() {
         ...route.query,
         taskId: selectedTask.value,
         fieldId: selectedField.value,
-        reportId: selectedReport.value ? selectedReport.value.id : undefined
+        reportId: selectedReport.value?.id
       }
     })
     
     loading.value = false
   } catch (error) {
-    console.error('加载分析报告失败', error)
-    ElMessage.error('加载分析报告失败')
+    console.error('加载报告列表失败', error)
+    ElMessage.error('加载报告列表失败')
     loading.value = false
   }
 }
 
 // 选择报告
-function selectReport(report: any) {
-  selectedReport.value = report
-  
-  // 更新URL参数
-  router.push({
-    query: {
-      ...route.query,
-      reportId: report.id
-    }
-  })
-}
-
-// 监听任务变化
-watch(selectedTask, async (newValue) => {
-  if (newValue) {
-    await loadFields(newValue)
-    selectedField.value = ''
-    await loadReports()
+async function selectReport(report: any) {
+  try {
+    loading.value = true
+    
+    // 获取报告详情
+    const res = await getAnalysisReportDetail(report.id)
+    selectedReport.value = res.data
+    isReportExpanded.value = true
+    
+    // 更新URL参数
+    router.push({
+      query: {
+        ...route.query,
+        reportId: report.id
+      }
+    })
+    
+    loading.value = false
+  } catch (error) {
+    console.error('加载报告详情失败', error)
+    ElMessage.error('加载报告详情失败')
+    loading.value = false
   }
-})
-
-// 监听地块变化
-watch(selectedField, async (newValue) => {
-  if (selectedTask.value) {
-    await loadReports()
-  }
-})
-
-// 处理刷新
-function handleRefresh() {
-  loadReports()
 }
 
 // 处理任务变化
@@ -364,14 +360,58 @@ function handleFieldChange() {
   // 由watch监听器处理
 }
 
-// 切换报告展开状态
-function toggleReportExpand() {
-  isReportExpanded.value = !isReportExpanded.value
+// 处理刷新
+function handleRefresh() {
+  loadReports()
 }
 
-// 格式化日期
+// 监听任务变化
+watch(selectedTask, async (newValue) => {
+  if (newValue) {
+    await loadFields(newValue)
+    selectedField.value = ''
+    await loadReports()
+    
+    if (reportList.value.length > 0) {
+      selectedReport.value = reportList.value[0]
+      isReportExpanded.value = false
+    } else {
+      selectedReport.value = null
+    }
+  }
+})
+
+// 监听地块变化
+watch(selectedField, async (newValue) => {
+  if (newValue || selectedTask.value) {
+    await loadReports()
+    
+    if (reportList.value.length > 0) {
+      selectedReport.value = reportList.value[0]
+      isReportExpanded.value = false
+    } else {
+      selectedReport.value = null
+    }
+  }
+})
+
+// 导出报告
+function exportReport(format: string) {
+  if (!selectedReport.value) return
+  
+  try {
+    exportAnalysisReport(selectedReport.value.id, format)
+    ElMessage.success(`报告已导出为${format.toUpperCase()}格式`)
+  } catch (error) {
+    console.error('导出报告失败', error)
+    ElMessage.error('导出报告失败')
+  }
+}
+
+// 格式化时间
 function formatDate(dateStr: string) {
   if (!dateStr) return ''
+  
   const date = new Date(dateStr)
   return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
@@ -382,25 +422,36 @@ function formatDate(dateStr: string) {
   })
 }
 
-// 导出报告
-async function handleExport(format: string) {
+// 查看策略推荐
+function viewStrategy() {
   if (!selectedReport.value) return
   
-  try {
-    loading.value = true
-    await exportAnalysisReport(selectedReport.value.id, format)
-    
-    ElMessage({
-      message: `报告已导出为${format.toUpperCase()}格式`,
-      type: 'success'
-    })
-    
-    loading.value = false
-  } catch (error) {
-    console.error('导出报告失败', error)
-    ElMessage.error('导出报告失败')
-    loading.value = false
-  }
+  router.push({
+    name: 'StrategyRecommendation',
+    query: {
+      taskId: selectedTask.value,
+      fieldId: selectedReport.value.field_id,
+      reportId: selectedReport.value.id
+    }
+  })
+}
+
+// 查看监测规划
+function viewMonitoringPlan() {
+  if (!selectedReport.value) return
+  
+  router.push({
+    name: 'MonitoringPlan',
+    query: {
+      taskId: selectedTask.value,
+      reportId: selectedReport.value.id
+    }
+  })
+}
+
+// 切换报告展开状态
+function toggleReportExpand() {
+  isReportExpanded.value = !isReportExpanded.value
 }
 
 // 打印报告
@@ -480,27 +531,6 @@ function handlePrint() {
   `)
   
   printWindow.document.close()
-}
-
-// 跳转到策略推演
-function goToStrategy() {
-  router.push({
-    name: 'StrategyRecommendation',
-    query: {
-      taskId: selectedTask.value,
-      fieldId: selectedField.value
-    }
-  })
-}
-
-// 跳转到监测规划
-function goToMonitoringPlan() {
-  router.push({
-    name: 'MonitoringPlan',
-    query: {
-      taskId: selectedTask.value
-    }
-  })
 }
 </script>
 

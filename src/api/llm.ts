@@ -1,9 +1,15 @@
 import request from '@/utils/request';
+import { getMockHandler } from '@/mock';
 
 /**
  * 获取异常诊断列表
  */
 export function getAnomalyDiagnosis() {
+  const mockHandler = getMockHandler('/api/llm/anomaly-diagnosis', 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({}))
+  }
+  
   return request({
     url: '/api/llm/anomaly-diagnosis',
     method: 'GET'
@@ -15,6 +21,11 @@ export function getAnomalyDiagnosis() {
  * @param id 异常诊断ID
  */
 export function getAnomalyDiagnosisById(id: number) {
+  const mockHandler = getMockHandler(`/api/llm/anomaly-diagnosis/${id}`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { id } }))
+  }
+  
   return request({
     url: `/api/llm/anomaly-diagnosis/${id}`,
     method: 'GET'
@@ -26,6 +37,11 @@ export function getAnomalyDiagnosisById(id: number) {
  * @param taskId 任务ID
  */
 export function getTaskAnomalyDiagnosis(taskId: number) {
+  const mockHandler = getMockHandler(`/api/llm/anomaly-diagnosis/task/${taskId}`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { taskId } }))
+  }
+  
   return request({
     url: `/api/llm/anomaly-diagnosis/task/${taskId}`,
     method: 'GET'
@@ -37,6 +53,11 @@ export function getTaskAnomalyDiagnosis(taskId: number) {
  * @param fieldId 地块ID
  */
 export function getFieldAnomalyDiagnosis(fieldId: number) {
+  const mockHandler = getMockHandler(`/api/llm/anomaly-diagnosis/field/${fieldId}`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { fieldId } }))
+  }
+  
   return request({
     url: `/api/llm/anomaly-diagnosis/field/${fieldId}`,
     method: 'GET'
@@ -47,6 +68,26 @@ export function getFieldAnomalyDiagnosis(fieldId: number) {
  * 获取异常类型分布统计
  */
 export function getAnomalyTypeDistribution() {
+  const mockHandler = getMockHandler('/api/llm/anomaly-diagnosis/type-distribution', 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({}))
+  }
+  
+  return request({
+    url: '/api/llm/anomaly-diagnosis/type-distribution',
+    method: 'GET'
+  });
+}
+
+/**
+ * 获取异常类型分布统计（别名）
+ */
+export function getAnomalyTypes() {
+  const mockHandler = getMockHandler('/api/llm/anomaly-diagnosis/type-distribution', 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({}))
+  }
+  
   return request({
     url: '/api/llm/anomaly-diagnosis/type-distribution',
     method: 'GET'
@@ -57,6 +98,26 @@ export function getAnomalyTypeDistribution() {
  * 获取严重性分布统计
  */
 export function getAnomalySeverityDistribution() {
+  const mockHandler = getMockHandler('/api/llm/anomaly-diagnosis/severity-distribution', 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({}))
+  }
+  
+  return request({
+    url: '/api/llm/anomaly-diagnosis/severity-distribution',
+    method: 'GET'
+  });
+}
+
+/**
+ * 获取严重性分布统计（别名）
+ */
+export function getSeverityDistribution() {
+  const mockHandler = getMockHandler('/api/llm/anomaly-diagnosis/severity-distribution', 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({}))
+  }
+  
   return request({
     url: '/api/llm/anomaly-diagnosis/severity-distribution',
     method: 'GET'
@@ -68,6 +129,11 @@ export function getAnomalySeverityDistribution() {
  * @param fieldId 地块ID
  */
 export function getFieldAnomalyAreas(fieldId: number) {
+  const mockHandler = getMockHandler(`/api/llm/anomaly-diagnosis/field/${fieldId}/areas`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { fieldId } }))
+  }
+  
   return request({
     url: `/api/llm/anomaly-diagnosis/field/${fieldId}/areas`,
     method: 'GET'
@@ -78,6 +144,11 @@ export function getFieldAnomalyAreas(fieldId: number) {
  * 获取策略推演列表
  */
 export function getStrategyRecommendations() {
+  const mockHandler = getMockHandler('/api/llm/strategy-recommendations', 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({}))
+  }
+  
   return request({
     url: '/api/llm/strategy-recommendations',
     method: 'GET'
@@ -89,6 +160,11 @@ export function getStrategyRecommendations() {
  * @param id 策略ID
  */
 export function getStrategyRecommendationById(id: number) {
+  const mockHandler = getMockHandler(`/api/llm/strategy-recommendations/${id}`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { id } }))
+  }
+  
   return request({
     url: `/api/llm/strategy-recommendations/${id}`,
     method: 'GET'
@@ -100,6 +176,11 @@ export function getStrategyRecommendationById(id: number) {
  * @param taskId 任务ID
  */
 export function getTaskStrategyRecommendations(taskId: number) {
+  const mockHandler = getMockHandler(`/api/llm/strategy-recommendations`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ query: { taskId } }))
+  }
+  
   return request({
     url: `/api/llm/strategy-recommendations?taskId=${taskId}`,
     method: 'GET'
@@ -111,6 +192,11 @@ export function getTaskStrategyRecommendations(taskId: number) {
  * @param fieldId 地块ID
  */
 export function getFieldStrategyRecommendations(fieldId: number) {
+  const mockHandler = getMockHandler(`/api/llm/strategy-recommendations`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ query: { fieldId } }))
+  }
+  
   return request({
     url: `/api/llm/strategy-recommendations?fieldId=${fieldId}`,
     method: 'GET'
@@ -121,6 +207,11 @@ export function getFieldStrategyRecommendations(fieldId: number) {
  * 获取分析报告列表
  */
 export function getAnalysisReports() {
+  const mockHandler = getMockHandler('/api/llm/reports', 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({}))
+  }
+  
   return request({
     url: '/api/llm/reports',
     method: 'GET'
@@ -132,6 +223,11 @@ export function getAnalysisReports() {
  * @param id 报告ID
  */
 export function getAnalysisReportDetail(id: number) {
+  const mockHandler = getMockHandler(`/api/llm/reports/${id}`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { id } }))
+  }
+  
   return request({
     url: `/api/llm/reports/${id}`,
     method: 'GET'
@@ -143,6 +239,11 @@ export function getAnalysisReportDetail(id: number) {
  * @param taskId 任务ID
  */
 export function getTaskAnalysisReports(taskId: number) {
+  const mockHandler = getMockHandler(`/api/llm/reports`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ query: { taskId } }))
+  }
+  
   return request({
     url: `/api/llm/reports?taskId=${taskId}`,
     method: 'GET'
@@ -154,6 +255,11 @@ export function getTaskAnalysisReports(taskId: number) {
  * @param fieldId 地块ID
  */
 export function getFieldAnalysisReports(fieldId: number) {
+  const mockHandler = getMockHandler(`/api/llm/reports`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ query: { fieldId } }))
+  }
+  
   return request({
     url: `/api/llm/reports?fieldId=${fieldId}`,
     method: 'GET'
@@ -166,6 +272,11 @@ export function getFieldAnalysisReports(fieldId: number) {
  * @param format 导出格式 (pdf/word)
  */
 export function exportAnalysisReport(id: number, format: string) {
+  const mockHandler = getMockHandler(`/api/llm/reports/${id}/export`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { id }, query: { format } }))
+  }
+  
   return request({
     url: `/api/llm/reports/${id}/export?format=${format}`,
     method: 'GET',
@@ -177,6 +288,11 @@ export function exportAnalysisReport(id: number, format: string) {
  * 获取监测规划列表
  */
 export function getMonitoringPlans() {
+  const mockHandler = getMockHandler('/api/llm/next-monitoring/plan', 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({}))
+  }
+  
   return request({
     url: '/api/llm/next-monitoring/plan',
     method: 'GET'
@@ -188,6 +304,11 @@ export function getMonitoringPlans() {
  * @param taskId 任务ID
  */
 export function getTaskMonitoringPlan(taskId: number) {
+  const mockHandler = getMockHandler(`/api/llm/next-monitoring/plan`, 'GET')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ query: { taskId } }))
+  }
+  
   return request({
     url: `/api/llm/next-monitoring/plan?taskId=${taskId}`,
     method: 'GET'
@@ -200,6 +321,11 @@ export function getTaskMonitoringPlan(taskId: number) {
  * @param status 状态 (approved/rejected)
  */
 export function updateMonitoringPlanStatus(id: number, status: string) {
+  const mockHandler = getMockHandler(`/api/llm/next-monitoring/plan/${id}/status`, 'PUT')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { id }, body: { status } }))
+  }
+  
   return request({
     url: `/api/llm/next-monitoring/plan/${id}/status`,
     method: 'PUT',
@@ -212,6 +338,11 @@ export function updateMonitoringPlanStatus(id: number, status: string) {
  * @param id 规划ID
  */
 export function createTaskFromPlan(id: number) {
+  const mockHandler = getMockHandler(`/api/llm/next-monitoring/plan/${id}/create-task`, 'POST')
+  if (mockHandler) {
+    return Promise.resolve(mockHandler({ params: { id } }))
+  }
+  
   return request({
     url: `/api/llm/next-monitoring/plan/${id}/create-task`,
     method: 'POST'

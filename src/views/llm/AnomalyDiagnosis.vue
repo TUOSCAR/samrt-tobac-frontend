@@ -106,8 +106,8 @@
           <div v-if="loading" class="loading-container">
             <el-icon class="is-loading"><Loading /></el-icon>
           </div>
-          <div v-else-if="selectedDiagnosis && selectedDiagnosis.diagnosis_result" class="diagnosis-content">
-            {{ selectedDiagnosis.diagnosis_result }}
+          <div v-else-if="selectedDiagnosis && selectedDiagnosis.diagnosis_content" class="diagnosis-content">
+            {{ selectedDiagnosis.diagnosis_content }}
           </div>
           <div v-else class="stats-empty">暂无诊断结果</div>
         </el-card>
@@ -218,11 +218,11 @@ import 'leaflet/dist/leaflet.css'
 import { getTaskList } from '@/api/task'
 import { getFieldsByTask } from '@/api/field'
 import {
-  getAnomalyDiagnosisList,
+  getAnomalyDiagnosis,
   getTaskAnomalyDiagnosis,
   getFieldAnomalyDiagnosis,
-  getAnomalyTypeDistribution,
-  getAnomalySeverityDistribution,
+  getAnomalyTypes,
+  getSeverityDistribution,
   getFieldAnomalyAreas
 } from '@/api/llm'
 
@@ -259,9 +259,9 @@ const formattedCauses = computed(() => {
 const anomalyTypeMap = {
   disease: { name: '病害', tag: 'danger' },
   pest: { name: '虫害', tag: 'warning' },
-  nutrient: { name: '营养缺乏', tag: 'info' },
-  water: { name: '水分管理问题', tag: 'primary' },
-  physical: { name: '物理损伤', tag: '' }
+  nutrition: { name: '营养缺乏', tag: 'info' },
+  growth: { name: '生长异常', tag: 'primary' },
+  environment: { name: '环境问题', tag: '' }
 }
 
 // 严重程度映射
@@ -376,8 +376,12 @@ async function loadResults() {
 // 加载异常类型分布
 async function loadAnomalyTypes() {
   try {
-    const res = await getAnomalyTypeDistribution()
-    anomalyTypes.value = res.data
+    const res = await getAnomalyTypes()
+    anomalyTypes.value = res.data.map((item: any) => ({
+      name: getAnomalyTypeName(item.type),
+      value: item.count,
+      type: item.type
+    }))
     
     if (anomalyTypeChart) {
       updateAnomalyTypeChart()
@@ -391,8 +395,13 @@ async function loadAnomalyTypes() {
 // 加载严重程度分布
 async function loadSeverityDistribution() {
   try {
-    const res = await getAnomalySeverityDistribution()
-    severityDistribution.value = res.data
+    const res = await getSeverityDistribution()
+    severityDistribution.value = res.data.map((item: any) => ({
+      name: getSeverityName(item.severity),
+      value: item.count,
+      severity: item.severity,
+      color: getSeverityColor(item.severity)
+    }))
     
     if (severityChart) {
       updateSeverityChart()
@@ -405,98 +414,90 @@ async function loadSeverityDistribution() {
 
 // 初始化地图
 function initMap() {
-  if (map) return
+  if (map) return;
   
-  map = L.map('anomaly-map').setView([30.28, 120.12], 13)
-  
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  }).addTo(map)
+  // 等待下一个渲染周期，确保DOM元素已经渲染
+  setTimeout(() => {
+    const mapElement = document.getElementById('anomaly-map');
+    if (mapElement) {
+      map = L.map('anomaly-map').setView([30.28, 120.12], 13);
+      
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(map);
+    }
+  }, 100);
 }
 
 // 更新地图
 function updateMap() {
-  if (!map || !anomalyAreas.value.length) return
+  if (!map || !anomalyAreas.value || !anomalyAreas.value.length) return;
   
   // 清除原有图层
   map.eachLayer((layer: any) => {
-    if (layer instanceof L.Polygon || layer instanceof L.Marker) {
-      map.removeLayer(layer)
+    if (layer instanceof L.Circle || layer instanceof L.Marker) {
+      map.removeLayer(layer);
     }
-  })
-  
-  // 添加地块边界
-  if (selectedField.value && fieldList.value.length > 0) {
-    const field = fieldList.value.find(f => f.id === selectedField.value)
-    if (field && field.boundary) {
-      try {
-        const boundary = typeof field.boundary === 'string' ? JSON.parse(field.boundary) : field.boundary
-        
-        // 添加地块边界
-        const fieldBoundary = L.geoJSON(boundary, {
-          style: {
-            color: '#3388ff',
-            weight: 2,
-            fillOpacity: 0.1
-          }
-        }).addTo(map)
-        
-        // 调整地图视野
-        map.fitBounds(fieldBoundary.getBounds())
-      } catch (e) {
-        console.error('解析地块边界失败', e)
-      }
-    }
-  }
+  });
   
   // 添加异常区域
   anomalyAreas.value.forEach(area => {
-    // 创建多边形
-    const polygon = L.polygon(area.coordinates, {
+    // 创建圆形标记异常区域
+    const circle = L.circle(area.center, {
+      radius: area.radius,
       color: getSeverityColor(area.severity),
       fillColor: getSeverityColor(area.severity),
       fillOpacity: 0.5,
       weight: 1
-    }).addTo(map)
+    }).addTo(map);
     
     // 添加弹出信息
-    polygon.bindPopup(`
+    circle.bindPopup(`
       <div class="popup-content">
         <h4>异常区域信息</h4>
         <p><strong>类型：</strong>${getAnomalyTypeName(area.anomaly_type)}</p>
         <p><strong>严重程度：</strong>${getSeverityName(area.severity)}</p>
-        <p><strong>面积：</strong>${area.area_size.toFixed(2)} 亩</p>
+        <p><strong>描述：</strong>${area.description}</p>
       </div>
-    `)
-  })
+    `);
+  });
   
-  // 如果没有地块边界但有异常区域，根据异常区域调整视野
-  if (anomalyAreas.value.length > 0 && (!selectedField.value || fieldList.value.length === 0)) {
-    const bounds = L.latLngBounds(anomalyAreas.value.map(area => area.coordinates).flat())
-    map.fitBounds(bounds)
+  // 如果有异常区域，根据第一个区域调整视野
+  if (anomalyAreas.value.length > 0) {
+    const firstArea = anomalyAreas.value[0];
+    map.setView(firstArea.center, 14);
   }
 }
 
 // 初始化图表
 function initCharts() {
-  // 初始化异常类型分布图表
-  anomalyTypeChart = echarts.init(document.getElementById('anomaly-type-chart'))
-  updateAnomalyTypeChart()
-  
-  // 初始化严重程度分布图表
-  severityChart = echarts.init(document.getElementById('severity-chart'))
-  updateSeverityChart()
-  
-  // 窗口大小变化时重新渲染图表
-  window.addEventListener('resize', () => {
-    anomalyTypeChart.resize()
-    severityChart.resize()
-  })
+  // 等待下一个渲染周期，确保DOM元素已经渲染
+  setTimeout(() => {
+    // 初始化异常类型分布图表
+    const anomalyTypeChartEl = document.getElementById('anomaly-type-chart');
+    if (anomalyTypeChartEl) {
+      anomalyTypeChart = echarts.init(anomalyTypeChartEl);
+      updateAnomalyTypeChart();
+    }
+    
+    // 初始化严重程度分布图表
+    const severityChartEl = document.getElementById('severity-chart');
+    if (severityChartEl) {
+      severityChart = echarts.init(severityChartEl);
+      updateSeverityChart();
+    }
+    
+    // 窗口大小变化时重新渲染图表
+    window.addEventListener('resize', () => {
+      anomalyTypeChart && anomalyTypeChart.resize();
+      severityChart && severityChart.resize();
+    });
+  }, 100);
 }
 
 // 更新异常类型分布图表
 function updateAnomalyTypeChart() {
-  if (!anomalyTypeChart || !anomalyTypes.value.length) return
+  if (!anomalyTypeChart || !anomalyTypes.value || !anomalyTypes.value.length) return;
   
   const option = {
     tooltip: {
@@ -533,20 +534,17 @@ function updateAnomalyTypeChart() {
         labelLine: {
           show: false
         },
-        data: anomalyTypes.value.map(item => ({
-          name: item.name,
-          value: item.value
-        }))
+        data: anomalyTypes.value
       }
     ]
-  }
+  };
   
-  anomalyTypeChart.setOption(option)
+  anomalyTypeChart.setOption(option);
 }
 
 // 更新严重程度分布图表
 function updateSeverityChart() {
-  if (!severityChart || !severityDistribution.value.length) return
+  if (!severityChart || !severityDistribution.value || !severityDistribution.value.length) return;
   
   const option = {
     tooltip: {
@@ -576,9 +574,9 @@ function updateSeverityChart() {
         }
       }
     ]
-  }
+  };
   
-  severityChart.setOption(option)
+  severityChart.setOption(option);
 }
 
 // 监听任务变化
